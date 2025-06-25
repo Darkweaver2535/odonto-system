@@ -1,7 +1,5 @@
 # OdontoSystem - Sistema de Gestión para Clínicas Dentales
 
-![OdontoSystem Logo](https://via.placeholder.com/800x200/1a91d1/ffffff?text=OdontoSystem)
-
 ## Visión General
 
 OdontoSystem es una solución integral de gestión diseñada específicamente para clínicas dentales y consultorios odontológicos de cualquier tamaño. Nuestro sistema combina funcionalidades clínicas, administrativas y de comunicación para optimizar la operación completa de establecimientos odontológicos.
@@ -161,10 +159,8 @@ Al contratar OdontoSystem, su clínica recibe:
 
 ¿Interesado en ver OdontoSystem en acción? Contáctenos para agendar una demostración personalizada:
 
-- 📧 **Email**: info@odontosystem.com
-- 📞 **Teléfono**: +1 (800) 123-4567
-- 🌐 **Web**: www.odontosystem.com
-- 📱 **WhatsApp**: +1 (800) 123-4567
+- 📧 **Email**: AlvaroEncinas26@gmail.com
+- 📞 **Teléfono o WhatsApp**: +591 76260216
 
 ---
 
