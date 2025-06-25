@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OdontoSystem - {% block title %}Sistema Odontológico{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Simplebar - Custom scrollbar -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simplebar@5.3.8/dist/simplebar.min.css">
+    <style>
+        :root {
+            --primary: #1a91d1;       /* Azul dental */
+            --primary-dark: #0b78b3;  /* Azul dental oscuro */
+            --secondary: #5cc1e0;     /* Azul claro */
+            --accent: #53c3b9;        /* Turquesa/mint */
+            --light: #f0f9ff;         /* Azul muy claro */
+            --dark: #0b3954;          /* Azul oscuro */
+            --white: #ffffff;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-800: #343a40;
+            --success: #28a745;
+            --info: #17a2b8;
+            --warning: #ffc107;
+            --danger: #dc3545;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f8fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Wrapper */
+        .wrapper {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+        
+        /* Sidebar Styles */
+        #sidebar {
+            width: 270px;
+            background: var(--white);
+            transition: all 0.3s;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            z-index: 1000;
+            position: fixed;
+            height: 100vh;
+            overflow: hidden;
+            border-right: 1px solid var(--gray-200);
+        }
+        
+        #sidebar.collapsed {
+            margin-left: -270px;
+        }
+        
+        /* Sidebar Header */
+        .sidebar-header {
+            padding: 1.5rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .sidebar-logo {
+            font-size: 24px;
+            color: var(--primary);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+        
+        .sidebar-logo .logo-icon {
+            font-size: 1.5rem;
+            margin-right: 0.75rem;
+        }
+        
+        /* Sidebar Menu */
+        .sidebar-menu {
+            padding: 1.5rem 0;
+            height: calc(100vh - 90px);
+            overflow-y: auto;
+        }
+
+        .simplebar-scrollbar:before {
+            background-color: var(--gray-400) !important;
+        }
+        
+        .sidebar-menu .nav-header {
+            padding: 0.5rem 1.5rem;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--gray-500);
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-top: 1rem;
+        }
+        
+        .sidebar-menu .nav-item {
+            position: relative;
+            margin: 0 0.75rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .sidebar-menu .nav-item.active {
+            background: rgba(26, 145, 209, 0.1);
+        }
+        
+        .sidebar-menu .nav-item.active .nav-link {
+            color: var(--primary);
+            font-weight: 500;
+        }
+        
+        .sidebar-menu .nav-item:hover {
+            background: rgba(26, 145, 209, 0.05);
+        }
+        
+        .sidebar-menu .nav-link {
+            padding: 0.75rem 1rem;
+            color: var(--gray-800);
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            font-weight: 400;
+            border-radius: 0.5rem;
+        }
+        
+        .sidebar-menu .nav-link i {
+            font-size: 1.1rem;
+            margin-right: 0.5rem;
+            width: 1.5rem;
+            text-align: center;
+            color: var(--gray-500);
+            transition: all 0.3s;
+        }
+        
+        .sidebar-menu .nav-link:hover {
+            color: var(--primary);
+        }
+        
+        .sidebar-menu .nav-link:hover i {
+            color: var(--primary);
+        }
+        
+        .sidebar-menu .nav-item.active .nav-link i {
+            color: var(--primary);
+        }
+        
+        .sidebar-menu .has-submenu .nav-link {
+            position: relative;
+        }
+        
+        .sidebar-menu .has-submenu .nav-link::after {
+            content: '\f105';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 1rem;
+            transition: transform 0.3s;
+        }
+        
+        .sidebar-menu .has-submenu.open .nav-link::after {
+            transform: rotate(90deg);
+        }
+        
+        .submenu {
+            padding-left: 2.5rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .submenu .nav-item {
+            margin: 0;
+        }
+        
+        .submenu .nav-link {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.85rem;
+            border-left: 1px dashed var(--gray-300);
+            margin-left: 0.5rem;
+        }
+        
+        .sidebar-menu .has-submenu.open .submenu {
+            max-height: 500px;
+        }
+        
+        /* Navbar Styles */
+        .top-navbar {
+            background: var(--white);
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            padding: 0.75rem 1.5rem;
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            z-index: 999;
+            transition: all 0.3s;
+            height: 70px;
+        }
+        
+        .top-navbar.full-width {
+            left: 0;
+        }
+        
+        .navbar-toggler {
+            border: none;
+            background: transparent;
+            color: var(--gray-800);
+            padding: 0.25rem 0.5rem;
+            font-size: 1.5rem;
+            transition: all 0.3s;
+        }
+        
+        .navbar-toggler:hover, 
+        .navbar-toggler:focus {
+            color: var(--primary);
+        }
+        
+        .navbar-nav .nav-link {
+            color: var(--gray-800);
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        
+        .navbar-nav .nav-link:hover {
+            color: var(--primary);
+        }
+        
+        .dropdown-item {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+        }
+
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            border-radius: 0.5rem;
+        }
+        
+        .user-dropdown-toggle {
+            display: flex;
+            align-items: center;
+            color: var(--gray-800);
+            text-decoration: none;
+        }
+        
+        .user-dropdown-toggle:hover {
+            color: var(--primary);
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: 0.5rem;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .user-role {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+
+        /* Search Box */
+        .search-form {
+            position: relative;
+            margin-right: 1rem;
+        }
+        
+        .search-input {
+            padding-left: 2.5rem;
+            border-radius: 50px;
+            background-color: var(--gray-100);
+            border-color: transparent;
+            width: 240px;
+            transition: all 0.3s;
+        }
+        
+        .search-input:focus {
+            width: 300px;
+            background-color: white;
+            box-shadow: 0 0 0 0.25rem rgba(26, 145, 209, 0.15);
+            border-color: var(--primary);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-500);
+            font-size: 0.9rem;
+        }
+
+        /* Notifications */
+        .notification-badge {
+            position: absolute;
+            top: 0.15rem;
+            right: 0.35rem;
+            font-size: 0.65rem;
+            width: 18px;
+            height: 18px;
+        }
+        
+        /* Content Area */
+        #content {
+            flex: 1;
+            padding-top: 70px;
+            padding-left: 270px;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        
+        #content.full-width {
+            padding-left: 0;
+        }
+        
+        .content-inner {
+            padding: 1.5rem;
+        }
+
+        /* Page Header */
+        .page-header {
+            padding: 1.5rem 1.5rem 0.5rem;
+            background-color: transparent;
+        }
+        
+        .page-header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .breadcrumb {
+            font-size: 0.85rem;
+            padding: 0;
+            background-color: transparent;
+            margin-bottom: 0;
+        }
+        
+        .breadcrumb-item a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item.active {
+            color: var(--gray-500);
+        }
+
+        /* Utilities */
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            display: inline-block;
+            border-radius: 50%;
+            margin-right: 0.25rem;
+        }
+
+        /* Card Styles */
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border-radius: 0.5rem;
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--gray-200);
+            padding: 1rem 1.25rem;
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0;
+            color: var(--dark);
+        }
+
+        /* Background Accent */
+        .bg-accent {
+            background-color: var(--accent);
+        }
+
+        /* Badge Styles */
+        .badge.bg-primary-light {
+            background-color: rgba(26, 145, 209, 0.1);
+            color: var(--primary);
+        }
+        
+        .badge.bg-success-light {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+        
+        .badge.bg-warning-light {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #d6a206;
+        }
+        
+        .badge.bg-danger-light {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            #sidebar {
+                margin-left: -270px;
+            }
+            
+            #sidebar.collapsed {
+                margin-left: 0;
+            }
+            
+            #content {
+                padding-left: 0;
+            }
+            
+            .top-navbar {
+                left: 0;
+            }
+            
+            .search-input {
+                width: 180px;
+            }
+            
+            .search-input:focus {
+                width: 220px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .user-info {
+                display: none;
+            }
+            
+            .search-form {
+                display: none;
+            }
+            
+            .content-inner {
+                padding: 1rem;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <a href="{% url 'dashboard' %}" class="sidebar-logo">
+                    <i class="fas fa-tooth logo-icon"></i>
+                    <span>OdontoSystem</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-menu" data-simplebar>
+                <div class="nav-header">Principal</div>
+                <ul class="nav flex-column">
+                    <li class="nav-item active">
+                        <a href="{% url 'dashboard' %}" class="nav-link">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                    </li>
+                    
+                    <!-- Módulo de Pacientes -->
+                    <li class="nav-item has-submenu">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-user-injured"></i> Pacientes
+                        </a>
+                        <ul class="submenu">
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-plus-circle"></i> Nuevo Paciente
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-list"></i> Lista de Pacientes
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-search"></i> Buscar Paciente
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Módulo de Historial Clínico -->
+                    <li class="nav-item has-submenu">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-notes-medical"></i> Historias Clínicas
+                        </a>
+                        <ul class="submenu">
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-file-medical"></i> Anamnesis
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-stethoscope"></i> Examen Clínico
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-teeth"></i> Odontograma
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Módulo de Citas y Agenda -->
+                    <li class="nav-item has-submenu">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-calendar-alt"></i> Citas y Agenda
+                        </a>
+                        <ul class="submenu">
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-calendar-plus"></i> Nueva Cita
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-calendar-day"></i> Agenda Diaria
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-calendar-week"></i> Calendario
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-business-time"></i> Horarios
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-bell"></i> Recordatorios
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Módulo de Tratamientos -->
+                    <li class="nav-item has-submenu">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-briefcase-medical"></i> Tratamientos
+                        </a>
+                        <ul class="submenu">
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-clipboard-list"></i> Catálogo
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-clipboard-check"></i> Planes de Tratamiento
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-tasks"></i> Seguimiento
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Módulo de Facturación -->
+                    <li class="nav-item has-submenu">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-file-invoice-dollar"></i> Facturación
+                        </a>
+                        <ul class="submenu">
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-file-invoice"></i> Nueva Factura
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-money-bill-wave"></i> Pagos
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-university"></i> Seguros Médicos
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-hand-holding-usd"></i> Saldos Pendientes
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    
+                    <div class="nav-header">Reportes y Gestión</div>
+                    
+                    <!-- Módulo de Reportes -->
+                    <li class="nav-item has-submenu">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-chart-bar"></i> Reportes
+                        </a>
+                        <ul class="submenu">
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-user-md"></i> Clínicos
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-chart-line"></i> Financieros
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-chart-pie"></i> Administrativos
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Módulo de Usuarios -->
+                    <li class="nav-item has-submenu">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-users"></i> Usuarios
+                        </a>
+                        <ul class="submenu">
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-user-plus"></i> Nuevo Usuario
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-users-cog"></i> Gestión de Usuarios
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-user-shield"></i> Roles y Permisos
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Módulo de Comunicación -->
+                    <li class="nav-item has-submenu">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-comment-medical"></i> Comunicación
+                        </a>
+                        <ul class="submenu">
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-envelope"></i> Correos
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-sms"></i> SMS
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-external-link-alt"></i> Portal del Paciente
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    
+                    <div class="nav-header">Sistema</div>
+                    
+                    <!-- Módulo de Seguridad -->
+                    <li class="nav-item has-submenu">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-shield-alt"></i> Seguridad
+                        </a>
+                        <ul class="submenu">
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-database"></i> Copias de Seguridad
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-file-contract"></i> Auditoría
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Módulo de Configuración -->
+                    <li class="nav-item has-submenu">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-cog"></i> Configuración
+                        </a>
+                        <ul class="submenu">
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-clinic-medical"></i> Datos del Consultorio
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-palette"></i> Personalización
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-sliders-h"></i> Parámetros
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        
+        <!-- Main Content -->
+        <div id="content">
+            <!-- Navbar -->
+            <nav class="navbar navbar-expand-lg top-navbar">
+                <div class="container-fluid px-0">
+                    <!-- Sidebar Toggle -->
+                    <button class="navbar-toggler" type="button" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    
+                    <!-- Search Bar -->
+                    <form class="search-form d-none d-md-flex">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="search" class="form-control search-input" placeholder="Buscar...">
+                    </form>
+                    
+                    <div class="navbar-collapse">
+                        <ul class="navbar-nav ms-auto">
+                            <!-- Notifications -->
+                            <li class="nav-item dropdown me-2">
+                                <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-bell fa-lg"></i>
+                                    <span class="position-absolute badge rounded-pill bg-danger notification-badge">3</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end pt-0" style="min-width: 280px;">
+                                    <li>
+                                        <div class="dropdown-header bg-primary text-white py-2">
+                                            <span class="fw-bold">3 Notificaciones</span>
+                                        </div>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item d-flex py-2" href="#">
+                                            <div class="flex-shrink-0">
+                                                <div class="bg-primary-light p-2 rounded-circle">
+                                                    <i class="fas fa-calendar-check text-primary"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <span class="fw-bold d-block">Nueva cita programada</span>
+                                                <small class="text-muted">Hace 5 minutos</small>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item d-flex py-2" href="#">
+                                            <div class="flex-shrink-0">
+                                                <div class="bg-success-light p-2 rounded-circle">
+                                                    <i class="fas fa-user-plus text-success"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <span class="fw-bold d-block">Nuevo paciente registrado</span>
+                                                <small class="text-muted">Hace 2 horas</small>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item d-flex py-2" href="#">
+                                            <div class="flex-shrink-0">
+                                                <div class="bg-warning-light p-2 rounded-circle">
+                                                    <i class="fas fa-file-invoice text-warning"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <span class="fw-bold d-block">Factura pendiente</span>
+                                                <small class="text-muted">Hace 1 día</small>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-center py-2 text-primary" href="#">
+                                            Ver todas las notificaciones
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            
+                            <!-- User Dropdown -->
+                            <li class="nav-item dropdown">
+                                <a class="user-dropdown-toggle dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    <div class="user-avatar">
+                                        <span>AD</span>
+                                    </div>
+                                    <div class="user-info d-none d-sm-block">
+                                        <span class="user-name">Admin</span>
+                                        <span class="user-role">Administrador</span>
+                                    </div>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i> Mi Perfil</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i> Configuración</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form method="post" action="{% url 'logout' %}" id="logout-form">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            
+            <!-- Page Content -->
+            <div class="content-inner">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Simplebar - Custom scrollbar -->
+    <script src="https://cdn.jsdelivr.net/npm/simplebar@5.3.8/dist/simplebar.min.js"></script>
+    <!-- Custom Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('content');
+            const topNavbar = document.querySelector('.top-navbar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const submenuItems = document.querySelectorAll('.has-submenu');
+            
+            // Sidebar Toggle
+            sidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+                content.classList.toggle('full-width');
+                topNavbar.classList.toggle('full-width');
+            });
+            
+            // Submenu Toggle
+            submenuItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('nav-link') && e.target.parentElement.classList.contains('has-submenu')) {
+                        e.preventDefault();
+                        this.classList.toggle('open');
+                    }
+                });
+            });
+            
+            // Set active menu item based on URL
+            const currentPath = window.location.pathname;
+            const menuLinks = document.querySelectorAll('.sidebar-menu .nav-link');
+            
+            menuLinks.forEach(link => {
+                const linkPath = link.getAttribute('href');
+                if (linkPath && currentPath === linkPath) {
+                    link.parentElement.classList.add('active');
+                    
+                    // If in submenu, open the parent
+                    const submenu = link.closest('.submenu');
+                    if (submenu) {
+                        submenu.parentElement.classList.add('open');
+                    }
+                }
+            });
+            
+            // Responsive behavior
+            function checkWindowSize() {
+                if (window.innerWidth < 992) {
+                    sidebar.classList.add('collapsed');
+                    content.classList.add('full-width');
+                    topNavbar.classList.add('full-width');
+                } else {
+                    sidebar.classList.remove('collapsed');
+                    content.classList.remove('full-width');
+                    topNavbar.classList.remove('full-width');
+                }
+            }
+            
+            // Initial check
+            checkWindowSize();
+            
+            // Listen for window resize
+            window.addEventListener('resize', checkWindowSize);
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OdontoSystem | Iniciar Sesión</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a91d1;       /* Azul dental */
+            --secondary: #5cc1e0;     /* Azul claro */
+            --accent: #53c3b9;        /* Turquesa/mint */
+            --light: #f0f9ff;         /* Azul muy claro */
+            --dark: #0b3954;          /* Azul oscuro */
+            --white: #ffffff;
+            --gray-light: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f8ff;
+        }
+
+        /* Fondo de patrón dental */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%231a91d1' fill-opacity='0.03'%3E%3Cpath d='M50 50c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10s-10-4.477-10-10 4.477-10 10-10zM10 10c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10S0 25.523 0 20s4.477-10 10-10zm10 8c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm40 40c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
+                          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='70' viewBox='0 0 80 80'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%2353c3b9' fill-opacity='0.03'%3E%3Cpath d='M10 25c-1.105 0-2-.895-2-2s.895-2 2-2 2 .895 2 2-.895 2-2 2zm60 0c-1.105 0-2-.895-2-2s.895-2 2-2 2 .895 2 2-.895 2-2 2zM10 55c-1.105 0-2-.895-2-2s.895-2 2-2 2 .895 2 2-.895 2-2 2zm60 0c-1.105 0-2-.895-2-2s.895-2 2-2 2 .895 2 2-.895 2-2 2zM35 10c-1.105 0-2-.895-2-2s.895-2 2-2 2 .895 2 2-.895 2-2 2zm20 0c-1.105 0-2-.895-2-2s.895-2 2-2 2 .895 2 2-.895 2-2 2zM35 70c-1.105 0-2-.895-2-2s.895-2 2-2 2 .895 2 2-.895 2-2 2zm20 0c-1.105 0-2-.895-2-2s.895-2 2-2 2 .895 2 2-.895 2-2 2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            z-index: -2;
+        }
+
+        /* Fondo con degradado */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(240, 249, 255, 0) 0%, rgba(11, 57, 84, 0.4) 100%);
+            z-index: -1;
+        }
+
+        /* Animación de dientes flotantes */
+        .floating-teeth {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .tooth {
+            position: absolute;
+            font-size: 1.5rem;
+            color: var(--primary);
+            opacity: 0.15;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        .tooth:nth-child(1) {
+            top: 5%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+        .tooth:nth-child(2) {
+            top: 15%;
+            left: 70%;
+            animation-delay: 2s;
+            font-size: 2rem;
+        }
+        .tooth:nth-child(3) {
+            top: 80%;
+            left: 15%;
+            animation-delay: 4s;
+            font-size: 1.8rem;
+        }
+        .tooth:nth-child(4) {
+            top: 75%;
+            left: 85%;
+            animation-delay: 6s;
+            font-size: 1.5rem;
+        }
+        .tooth:nth-child(5) {
+            top: 35%;
+            left: 30%;
+            animation-delay: 8s;
+            font-size: 2.2rem;
+        }
+        .tooth:nth-child(6) {
+            top: 40%;
+            left: 65%;
+            animation-delay: 10s;
+            font-size: 1.7rem;
+        }
+        .tooth:nth-child(7) {
+            top: 60%;
+            left: 40%;
+            animation-delay: 12s;
+            font-size: 1.9rem;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(10deg);
+            }
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+        }
+
+        /* Efecto de luz mórfico */
+        .light-effect {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(
+                circle,
+                rgba(92, 193, 224, 0.1) 0%,
+                rgba(83, 195, 185, 0.05) 50%,
+                rgba(0, 0, 0, 0) 70%
+            );
+            filter: blur(80px);
+            z-index: -1;
+            animation: morphLight 20s infinite alternate;
+        }
+
+        .light-effect:nth-child(1) {
+            top: -10%;
+            left: -10%;
+            animation-delay: 0s;
+        }
+
+        .light-effect:nth-child(2) {
+            bottom: -10%;
+            right: -10%;
+            animation-delay: 10s;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(
+                circle,
+                rgba(26, 145, 209, 0.1) 0%,
+                rgba(11, 57, 84, 0.05) 50%,
+                rgba(0, 0, 0, 0) 70%
+            );
+        }
+
+        @keyframes morphLight {
+            0% {
+                transform: scale(1) translate(0, 0);
+                border-radius: 50%;
+            }
+            50% {
+                transform: scale(1.2) translate(50px, 20px);
+                border-radius: 40% 60% 70% 30%;
+            }
+            100% {
+                transform: scale(1) translate(0, 0);
+                border-radius: 50%;
+            }
+        }
+
+        /* Burbujas animadas */
+        .bubbles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            top: 0;
+            left: 0;
+        }
+        
+        .bubble {
+            position: absolute;
+            bottom: -100px;
+            width: 40px;
+            height: 40px;
+            background: rgba(26, 145, 209, 0.1);
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: rise 15s infinite ease-in;
+        }
+        
+        .bubble:nth-child(1) {
+            width: 40px;
+            height: 40px;
+            left: 10%;
+            animation-duration: 12s;
+            animation-delay: 1s;
+            background: rgba(83, 195, 185, 0.1);
+        }
+        
+        .bubble:nth-child(2) {
+            width: 20px;
+            height: 20px;
+            left: 20%;
+            animation-duration: 10s;
+            animation-delay: 3s;
+            background: rgba(26, 145, 209, 0.1);
+        }
+        
+        .bubble:nth-child(3) {
+            width: 50px;
+            height: 50px;
+            left: 35%;
+            animation-duration: 14s;
+            animation-delay: 4s;
+            background: rgba(83, 195, 185, 0.1);
+        }
+        
+        .bubble:nth-child(4) {
+            width: 80px;
+            height: 80px;
+            left: 50%;
+            animation-duration: 16s;
+            animation-delay: 2s;
+            background: rgba(26, 145, 209, 0.1);
+        }
+        
+        .bubble:nth-child(5) {
+            width: 35px;
+            height: 35px;
+            left: 55%;
+            animation-duration: 11s;
+            animation-delay: 6s;
+            background: rgba(83, 195, 185, 0.1);
+        }
+        
+        .bubble:nth-child(6) {
+            width: 45px;
+            height: 45px;
+            left: 65%;
+            animation-duration: 18s;
+            animation-delay: 3s;
+            background: rgba(26, 145, 209, 0.1);
+        }
+        
+        .bubble:nth-child(7) {
+            width: 90px;
+            height: 90px;
+            left: 70%;
+            animation-duration: 17s;
+            animation-delay: 7s;
+            background: rgba(83, 195, 185, 0.1);
+        }
+        
+        @keyframes rise {
+            0% {
+                bottom: -100px;
+                transform: translateX(0) rotate(0deg);
+            }
+            50% {
+                transform: translate(100px, -500px) rotate(60deg);
+            }
+            100% {
+                bottom: 1080px;
+                transform: translateX(-200px) rotate(120deg);
+            }
+        }
+
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-card {
+            max-width: 1050px;
+            width: 92%;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(11, 57, 84, 0.25);
+            background-color: rgba(255, 255, 255, 0.98);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .login-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px -15px rgba(11, 57, 84, 0.35);
+        }
+
+        .card-img-side {
+            background-color: var(--primary);
+            background-image: linear-gradient(135deg, rgba(26, 145, 209, 0.9), rgba(83, 195, 185, 0.9)),
+                              url('https://images.unsplash.com/photo-1606811971618-4486d14f3f99?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            min-height: 600px;
+            overflow: hidden;
+        }
+
+        /* Patrones en el panel izquierdo */
+        .card-img-side::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M54.627 0l.83.828-1.415 1.415L51.8 0h2.827zM5.373 0l-.83.828L5.96 2.243 8.2 0H5.374zM48.97 0l3.657 3.657-1.414 1.414L46.143 0h2.828zM11.03 0L7.372 3.657 8.787 5.07 13.857 0H11.03zm32.284 0L49.8 6.485 48.384 7.9l-7.9-7.9h2.83zM16.686 0L10.2 6.485 11.616 7.9l7.9-7.9h-2.83zm20.97 0l9.315 9.314-1.414 1.414L34.828 0h2.83zM22.344 0L13.03 9.314l1.414 1.414L25.172 0h-2.83zM32 0l12.142 12.142-1.414 1.414L30 .828 17.272 13.556l-1.414-1.414L28 0h4zM.284 0l28 28-1.414 1.414L0 2.544V0h.284zM0 5.373l25.456 25.455-1.414 1.415L0 8.2V5.374zm0 5.656l22.627 22.627-1.414 1.414L0 13.86v-2.83zm0 5.656l19.8 19.8-1.415 1.413L0 19.514v-2.83zm0 5.657l16.97 16.97-1.414 1.415L0 25.172v-2.83zM0 28l14.142 14.142-1.414 1.414L0 30.828V28zm0 5.657L11.314 44.97 9.9 46.386l-9.9-9.9v-2.828zm0 5.657L8.485 47.8 7.07 49.212 0 42.143v-2.83zm0 5.657l5.657 5.657-1.414 1.415L0 47.8v-2.83zm0 5.657l2.828 2.83-1.414 1.413L0 53.456v-2.83zM54.627 60L30 35.373 5.373 60H8.2L30 38.2 51.8 60h2.827zm-5.656 0L30 41.03 11.03 60h2.828L30 43.858 46.142 60h2.83zm-5.656 0L30 46.686 16.686 60h2.83L30 49.515 40.485 60h2.83zm-5.657 0L30 52.343 22.344 60h2.83L30 55.172 34.828 60h2.83zM32 60l-2-2-2 2h4zM59.716 0l-28 28 1.414 1.414L60 2.544V0h-.284zM60 5.373L34.544 30.828l1.414 1.415L60 8.2V5.374zm0 5.656L37.373 33.656l1.414 1.414L60 13.86v-2.83zm0 5.656l-19.8 19.8 1.415 1.413L60 19.514v-2.83zm0 5.657l-16.97 16.97 1.414 1.415L60 25.172v-2.83zM60 28L45.858 42.142l1.414 1.414L60 30.828V28zm0 5.657L48.686 44.97l1.415 1.415 9.9-9.9v-2.828zm0 5.657L51.515 47.8l1.414 1.413 7.07-7.07v-2.83zm0 5.657l-5.657 5.657 1.414 1.415L60 47.8v-2.83zm0 5.657l-2.828 2.83 1.414 1.413L60 53.456v-2.83zM39.9 16.385l1.414-1.414L30 3.658 18.686 14.97l1.415 1.415 9.9-9.9 9.9 9.9zm-2.83 2.828l1.415-1.414L30 9.313 21.515 17.8l1.414 1.413L30 11.8l7.07 7.414zm-2.827 2.83l1.414-1.416L30 15.17l-5.657 5.656 1.414 1.415L30 17.8l4.243 4.242zm-2.83 2.827l1.415-1.414L30 21.04l-2.828 2.83 1.414 1.413L30 23.858l1.414 1.414zm5.657 5.657L40 27.113l-1.414-1.414-7.07 7.07 7.07 7.07L40 38.43 30 28.43l-10 10 1.414 1.413 7.07-7.07 7.07 7.07 1.414-1.414-7.07-7.07zm-2.83 2.83l1.415-1.415-1.414-1.414-4.242 4.242 4.242 4.243 1.414-1.414-2.828-2.83 2.828-2.83zm-2.827 2.827l1.414-1.414-1.414-1.414-1.414 1.414 1.414 1.414zm2.827 2.83l-1.414 1.413 1.414 1.414 1.414-1.414-1.414-1.414zM30 45.657l1.414 1.414-1.414 1.414-1.414-1.414 1.414-1.414zm-5.657-5.657l1.414 1.414 2.83-2.828-1.415-1.414-2.83 2.83zm-2.828-2.83l1.414 1.415L30 31.113l-7.07-7.07-1.415 1.414 7.07 7.07-7.07 7.07 1.414 1.415 7.07-7.07 7.07 7.07 1.414-1.414-7.07-7.07z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
+
+        /* Panel con contenido de la izquierda */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            color: white;
+            z-index: 1;
+        }
+
+        .logo-container {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .logo-icon {
+            font-size: 3.5rem;
+            color: white;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .logo-text {
+            font-size: 2.2rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            font-weight: 300;
+            max-width: 80%;
+            text-align: center;
+            margin-top: 20px;
+            line-height: 1.6;
+        }
+
+        .feature-points {
+            margin-top: 40px;
+            width: 80%;
+        }
+
+        .feature-point {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-weight: 300;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-point:hover {
+            transform: translateX(10px);
+        }
+
+        .feature-icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-form {
+            padding: 50px;
+            background-color: rgba(255, 255, 255, 0.98);
+            position: relative;
+        }
+
+        .form-floating {
+            margin-bottom: 20px;
+        }
+
+        .form-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 30px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .form-title::after {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            bottom: -10px;
+            left: 0;
+            border-radius: 2px;
+        }
+
+        .form-control {
+            height: 55px;
+            border-radius: 12px;
+            box-shadow: none;
+            border: 1px solid #e0e0e0;
+            font-size: 1rem;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .form-control:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 0.25rem rgb(92 193 224 / 25%);
+            background-color: white;
+        }
+
+        .input-group-text {
+            background-color: transparent;
+            border-right: none;
+            color: #adb5bd;
+        }
+
+        .form-floating>label {
+            padding: 1rem;
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 15px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn-login::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn-login:hover::before {
+            opacity: 1;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(26, 145, 209, 0.3);
+        }
+
+        .forgot-password {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .forgot-password:hover {
+            color: var(--accent);
+            transform: translateX(5px);
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        /* Estilo para el toggle de contraseña */
+        .password-toggle {
+            cursor: pointer;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #adb5bd;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary);
+        }
+
+        /* Estilos para alertas */
+        .alert {
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .alert-danger {
+            background-color: #fff2f2;
+            border-color: #ffcdd2;
+            color: #d32f2f;
+        }
+
+        @media (max-width: 992px) {
+            .card-img-side {
+                min-height: 400px;
+            }
+
+            .login-card {
+                max-width: 90%;
+            }
+            
+            .feature-points {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .login-card {
+                flex-direction: column;
+            }
+
+            .card-img-side {
+                min-height: 300px;
+            }
+
+            .login-form {
+                padding: 30px 20px;
+            }
+            
+            .form-title {
+                font-size: 1.5rem;
+            }
+            
+            .logo-text {
+                font-size: 1.8rem;
+            }
+        }
+
+        .highlight-hover:hover {
+            transition: all 0.3s ease;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Efectos de luz mórfica -->
+    <div class="light-effect"></div>
+    <div class="light-effect"></div>
+
+    <!-- Elementos dentales flotantes -->
+    <div class="floating-teeth">
+        <div class="tooth"><i class="fas fa-tooth"></i></div>
+        <div class="tooth"><i class="fas fa-tooth"></i></div>
+        <div class="tooth"><i class="fas fa-tooth"></i></div>
+        <div class="tooth"><i class="fas fa-tooth"></i></div>
+        <div class="tooth"><i class="fas fa-tooth"></i></div>
+        <div class="tooth"><i class="fas fa-tooth"></i></div>
+        <div class="tooth"><i class="fas fa-tooth"></i></div>
+    </div>
+
+    <!-- Burbujas animadas -->
+    <div class="bubbles">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+    </div>
+
+    <div class="login-container">
+        <div class="container">
+            <div class="row login-card mx-auto">
+                <!-- Lado izquierdo con imagen -->
+                <div class="col-lg-6 card-img-side p-0">
+                    <div class="overlay">
+                        <div class="logo-container">
+                            <div class="logo-icon">
+                                <i class="fas fa-tooth"></i>
+                            </div>
+                            <div class="logo-text">OdontoSystem</div>
+                            <div class="tagline">Sistema integral para la gestión de consultorio odontológico profesional</div>
+                        </div>
+                        
+                        <div class="feature-points">
+                            <div class="feature-point">
+                                <span class="feature-icon"><i class="fas fa-user-check"></i></span>
+                                <span>Gestión completa de pacientes</span>
+                            </div>
+                            <div class="feature-point">
+                                <span class="feature-icon"><i class="fas fa-calendar-check"></i></span>
+                                <span>Administración eficiente de citas</span>
+                            </div>
+                            <div class="feature-point">
+                                <span class="feature-icon"><i class="fas fa-file-medical"></i></span>
+                                <span>Historias clínicas digitales</span>
+                            </div>
+                            <div class="feature-point">
+                                <span class="feature-icon"><i class="fas fa-chart-line"></i></span>
+                                <span>Reportes y estadísticas avanzadas</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Lado derecho con formulario -->
+                <div class="col-lg-6 login-form">
+                    <h2 class="form-title">Iniciar Sesión</h2>
+                    
+                    <form method="post" action="{% url 'login' %}">
+                        {% csrf_token %}
+                        
+                        <!-- Mensaje de error -->
+                        {% if form.errors %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            Usuario o contraseña incorrectos. Por favor, intente nuevamente.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Campo usuario -->
+                        <div class="form-floating mb-4">
+                            <input type="text" name="username" class="form-control" id="username" placeholder="Nombre de usuario" required autofocus>
+                            <label for="username"><i class="fas fa-user me-2"></i>Nombre de usuario</label>
+                        </div>
+                        
+                        <!-- Campo contraseña -->
+                        <div class="form-floating mb-3 position-relative">
+                            <input type="password" name="password" id="password" class="form-control" placeholder="Contraseña" required>
+                            <label for="password"><i class="fas fa-lock me-2"></i>Contraseña</label>
+                            <span class="password-toggle" onclick="togglePassword()">
+                                <i class="fas fa-eye" id="toggleIcon"></i>
+                            </span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <a href="{% url 'password_reset' %}" class="forgot-password">¿Olvidó su contraseña? <i class="fas fa-arrow-right ms-1"></i></a>
+                        </div>
+                        
+                        <!-- Botón de ingreso -->
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-login w-100">
+                                Ingresar <i class="fas fa-sign-in-alt ms-2"></i>
+                            </button>
+                        </div>
+                        
+                        <input type="hidden" name="next" value="{{ next }}">
+                    </form>
+                    
+                    <div class="login-footer">
+                        <p>© 2025 <span class="highlight-hover">OdontoSystem</span> - Todos los derechos reservados</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Script para mostrar/ocultar contraseña -->
+    <script>
+        function togglePassword() {
+            const passwordField = document.getElementById('password');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggleIcon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                toggleIcon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        // Animación suave de entrada para el formulario
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginCard = document.querySelector('.login-card');
+            loginCard.style.opacity = '0';
+            loginCard.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                loginCard.style.transition = 'all 0.7s ease';
+                loginCard.style.opacity = '1';
+                loginCard.style.transform = 'translateY(0)';
+            }, 200);
+        });
+    </script>
+</body>
+</html>
