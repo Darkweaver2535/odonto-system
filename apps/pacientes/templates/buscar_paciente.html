@@ -1,0 +1,746 @@
+{% extends 'base.html' %}
+
+{% block title %}Buscar Paciente{% endblock %}
+
+{% block extra_css %}
+<style>
+    .search-card {
+        border-radius: 18px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        border: none;
+        overflow: hidden;
+    }
+    
+    .search-card:hover {
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        transform: translateY(-5px);
+    }
+    
+    .search-card-header {
+        background: linear-gradient(145deg, #f8faff, #f0f4fa);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1.25rem 1.5rem;
+        border-radius: 18px 18px 0 0;
+    }
+    
+    .search-card-body {
+        padding: 1.5rem;
+    }
+    
+    .search-box {
+        border-radius: 50px;
+        padding: 1.5rem;
+        background: linear-gradient(145deg, #f8faff, #f0f4fa);
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        position: relative;
+    }
+    
+    .search-input {
+        border-radius: 50px;
+        padding-left: 3rem;
+        height: 60px;
+        font-size: 1.1rem;
+        border: 1px solid var(--gray-200);
+        transition: all 0.3s ease;
+    }
+    
+    .search-input:focus {
+        box-shadow: 0 0 0 0.25rem rgba(26, 145, 209, 0.15);
+        border-color: var(--primary);
+    }
+    
+    .search-icon {
+        position: absolute;
+        left: 2.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-500);
+        font-size: 1.2rem;
+    }
+    
+    .search-button {
+        border-radius: 50px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+    }
+    
+    .filter-button {
+        border-radius: 50px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        background-color: rgba(26, 145, 209, 0.1);
+        color: var(--primary);
+        border: none;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-button:hover {
+        background-color: rgba(26, 145, 209, 0.2);
+        color: var(--primary);
+    }
+    
+    .filter-button i {
+        margin-right: 0.5rem;
+    }
+    
+    .advanced-search {
+        background-color: #fff;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        display: none;
+    }
+    
+    .avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background-color: var(--primary);
+    }
+    
+    .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 12px;
+    }
+    
+    .result-item {
+        padding: 1rem;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+        margin-bottom: 1rem;
+        background-color: #fff;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
+    }
+    
+    .result-item:hover {
+        border-color: var(--primary);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    }
+    
+    .result-item:hover .avatar {
+        transform: scale(1.1);
+        border-radius: 50%;
+    }
+    
+    .patient-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: var(--dark);
+        margin-bottom: 0.3rem;
+    }
+    
+    .patient-details {
+        color: var(--gray-600);
+        font-size: 0.9rem;
+    }
+    
+    .patient-contact {
+        font-size: 0.9rem;
+        color: var(--gray-700);
+    }
+    
+    .badge-status {
+        padding: 0.4rem 0.8rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .badge-active {
+        background-color: rgba(40, 167, 69, 0.1);
+        color: var(--success);
+    }
+    
+    .badge-inactive {
+        background-color: rgba(108, 117, 125, 0.1);
+        color: var(--gray-800);
+    }
+    
+    .badge-treatment {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #d6a206;
+    }
+    
+    .badge-defaulter {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: var(--danger);
+    }
+    
+    .action-button {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        background-color: rgba(26, 145, 209, 0.1);
+        border: none;
+        transition: all 0.3s ease;
+        margin-right: 0.25rem;
+    }
+    
+    .action-button:hover {
+        background-color: var(--primary);
+        color: white;
+        transform: translateY(-3px);
+    }
+    
+    .action-button-text {
+        border-radius: 10px;
+        padding: 0.5rem 1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        background-color: rgba(26, 145, 209, 0.1);
+        border: none;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+    
+    .action-button-text:hover {
+        background-color: var(--primary);
+        color: white;
+        transform: translateY(-3px);
+    }
+    
+    .action-button-text i {
+        margin-right: 0.5rem;
+    }
+    
+    .search-tabs .nav-link {
+        border-radius: 50px;
+        padding: 0.5rem 1.5rem;
+        color: var(--gray-700);
+        font-weight: 500;
+        border: 1px solid transparent;
+    }
+    
+    .search-tabs .nav-link.active {
+        background-color: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+    
+    .search-tabs .nav-link:hover:not(.active) {
+        background-color: rgba(26, 145, 209, 0.1);
+        color: var(--primary);
+    }
+    
+    .result-count {
+        font-size: 0.9rem;
+        color: var(--gray-600);
+        margin-bottom: 1.5rem;
+    }
+    
+    .highlight {
+        background-color: rgba(255, 230, 0, 0.3);
+        padding: 0.1rem 0.2rem;
+        border-radius: 3px;
+    }
+    
+    .info-message {
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .info-icon {
+        font-size: 3rem;
+        color: var(--gray-400);
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-2">Buscar Paciente</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="#">Pacientes</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Buscar Paciente</li>
+            </ol>
+        </nav>
+    </div>
+    <!-- Botón de Nuevo Paciente -->
+    <div class="mt-3 mt-md-0">
+        <a href="{% url 'pacientes:nuevo_paciente' %}" class="btn btn-primary rounded-pill px-4">
+            <i class="fas fa-user-plus me-2"></i>Nuevo Paciente
+        </a>
+    </div>
+</div>
+
+<!-- Buscador Principal -->
+<div class="search-box">
+    <form action="{% url 'pacientes:buscar_paciente' %}" method="get">
+        <div class="row align-items-center">
+            <div class="col-lg-9 mb-3 mb-lg-0 position-relative">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="form-control search-input" placeholder="Buscar por nombre, apellido, CI, teléfono o email..." name="q" value="{{ query }}">
+            </div>
+            <div class="col-lg-3 text-lg-end">
+                <button type="submit" class="btn btn-primary search-button w-100">
+                    <i class="fas fa-search me-2"></i>Buscar
+                </button>
+            </div>
+        </div>
+    </form>
+    
+    <div class="mt-4 d-flex justify-content-between align-items-center">
+        <button type="button" class="filter-button" id="toggle-advanced">
+            <i class="fas fa-sliders-h"></i>Búsqueda Avanzada
+        </button>
+        
+        <ul class="nav search-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" href="#todos" data-bs-toggle="tab">Todos</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#activos" data-bs-toggle="tab">Activos</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#tratamiento" data-bs-toggle="tab">En Tratamiento</a>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Búsqueda Avanzada (oculta inicialmente) -->
+    <div class="advanced-search" id="advanced-search">
+        <form action="{% url 'pacientes:buscar_paciente' %}" method="get">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="filter-status" class="form-label small">Estado</label>
+                    <select class="form-select" id="filter-status" name="status">
+                        <option value="" selected>Todos los estados</option>
+                        <option value="activo" {% if filtros.estado == 'activo' %}selected{% endif %}>Activo</option>
+                        <option value="inactivo" {% if filtros.estado == 'inactivo' %}selected{% endif %}>Inactivo</option>
+                        <option value="tratamiento" {% if filtros.estado == 'tratamiento' %}selected{% endif %}>En Tratamiento</option>
+                        <option value="moroso" {% if filtros.estado == 'moroso' %}selected{% endif %}>Moroso</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="filter-gender" class="form-label small">Género</label>
+                    <select class="form-select" id="filter-gender" name="gender">
+                        <option value="" selected>Todos</option>
+                        <option value="masculino" {% if filtros.genero == 'masculino' %}selected{% endif %}>Masculino</option>
+                        <option value="femenino" {% if filtros.genero == 'femenino' %}selected{% endif %}>Femenino</option>
+                        <option value="otro" {% if filtros.genero == 'otro' %}selected{% endif %}>Otro</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="filter-date" class="form-label small">Fecha de Registro</label>
+                    <select class="form-select" id="filter-date" name="date">
+                        <option value="" selected>Cualquier fecha</option>
+                        <option value="today" {% if filtros.fecha == 'today' %}selected{% endif %}>Hoy</option>
+                        <option value="week" {% if filtros.fecha == 'week' %}selected{% endif %}>Esta semana</option>
+                        <option value="month" {% if filtros.fecha == 'month' %}selected{% endif %}>Este mes</option>
+                        <option value="year" {% if filtros.fecha == 'year' %}selected{% endif %}>Este año</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="filter-city" class="form-label small">Ciudad</label>
+                    <input type="text" class="form-control" id="filter-city" name="city" placeholder="Ciudad del paciente" value="{{ filtros.ciudad }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="filter-insurance" class="form-label small">Seguro Médico</label>
+                    <select class="form-select" id="filter-insurance" name="insurance">
+                        <option value="" selected>Todos</option>
+                        <option value="yes" {% if filtros.seguro == 'yes' %}selected{% endif %}>Con Seguro</option>
+                        <option value="no" {% if filtros.seguro == 'no' %}selected{% endif %}>Sin Seguro</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="filter-age" class="form-label small">Edad</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="filter-age-min" name="age_min" placeholder="Mínimo" value="{{ filtros.edad_min }}">
+                        <span class="input-group-text">a</span>
+                        <input type="number" class="form-control" id="filter-age-max" name="age_max" placeholder="Máximo" value="{{ filtros.edad_max }}">
+                    </div>
+                </div>
+                <div class="col-12 text-end mt-4">
+                    <a href="{% url 'pacientes:buscar_paciente' %}" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-redo me-1"></i>Limpiar Filtros
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter me-1"></i>Aplicar Filtros
+                    </button>
+                </div>
+            </div>
+            <!-- Mantener el término de búsqueda si existe -->
+            {% if query %}
+                <input type="hidden" name="q" value="{{ query }}">
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Resultados de la búsqueda -->
+<div class="search-card">
+    <div class="search-card-header">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-search me-2 text-primary"></i>Resultados de la búsqueda
+        </h5>
+    </div>
+    <div class="search-card-body">
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Todos los pacientes -->
+            <div class="tab-pane fade show active" id="todos">
+                <div class="result-count mb-4">
+                    {% if pacientes %}
+                        <strong>{{ pacientes|length }} paciente{% if pacientes|length != 1 %}s{% endif %}</strong> encontrado{% if pacientes|length != 1 %}s{% endif %}
+                        {% if query %} para "<strong>{{ query }}</strong>"{% endif %}
+                    {% else %}
+                        <strong>0 pacientes</strong> encontrados
+                    {% endif %}
+                </div>
+                
+                <div class="results-list">
+                    {% if pacientes %}
+                        {% for paciente in pacientes %}
+                        <div class="result-item">
+                            <div class="row align-items-center">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar me-3">
+                                            {% if paciente.foto %}
+                                                <img src="{{ paciente.foto.url }}" alt="{{ paciente.get_nombre_completo }}">
+                                            {% else %}
+                                                {{ paciente.get_iniciales }}
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <div class="patient-name">{{ paciente.get_nombre_completo }}</div>
+                                            <div class="patient-details">
+                                                <span class="me-3">CI: {{ paciente.ci }}</span>
+                                                <span>{{ paciente.get_edad }} años</span>
+                                            </div>
+                                            <div class="patient-contact">
+                                                <i class="fas fa-phone-alt me-1"></i> {{ paciente.telefono }}
+                                                {% if paciente.email %}
+                                                    <span class="ms-3"><i class="fas fa-envelope me-1"></i> {{ paciente.email }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3 mb-md-0">
+                                    <div class="d-flex flex-column">
+                                        <span class="badge-status 
+                                            {% if paciente.estado == 'activo' %}badge-active
+                                            {% elif paciente.estado == 'inactivo' %}badge-inactive
+                                            {% elif paciente.estado == 'tratamiento' %}badge-treatment
+                                            {% elif paciente.estado == 'moroso' %}badge-defaulter{% endif %} mb-2">
+                                            {{ paciente.get_estado_display }}
+                                        </span>
+                                        <span class="small text-muted">Registro: {{ paciente.fecha_registro|date:"d/m/Y" }}</span>
+                                        {% if paciente.ultima_visita %}
+                                            <span class="small text-muted">Última visita: {{ paciente.ultima_visita|date:"d/m/Y" }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-3 text-md-end">
+                                    <a href="{% url 'pacientes:historia_clinica' paciente.id %}" class="action-button" title="Ver Historia Clínica">
+                                        <i class="fas fa-notes-medical"></i>
+                                    </a>
+                                    <a href="{% url 'pacientes:detalle_paciente' paciente.id %}" class="action-button" title="Ver Detalles">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'pacientes:editar_paciente' paciente.id %}" class="action-button" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button class="action-button-text mt-2">
+                                        <i class="fas fa-calendar-plus"></i>Nueva Cita
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    
+                    {% else %}
+                        <!-- Mensaje cuando no hay resultados -->
+                        <div class="info-message">
+                            <i class="fas fa-search-minus info-icon"></i>
+                            <h4>No se encontraron pacientes</h4>
+                            <p class="text-muted">Intente con otros criterios de búsqueda o registre un nuevo paciente.</p>
+                            <a href="{% url 'pacientes:nuevo_paciente' %}" class="btn btn-primary mt-3">
+                                <i class="fas fa-user-plus me-2"></i>Registrar Nuevo Paciente
+                            </a>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Paginación (si se implementa) -->
+                    {% if pacientes.has_other_pages %}
+                    <div class="d-flex justify-content-center mt-4">
+                        <nav aria-label="Paginación de resultados">
+                            <ul class="pagination">
+                                {% if pacientes.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?q={{ query }}&page=1{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.genero %}&genero={{ filtros.genero }}{% endif %}" aria-label="Primera">
+                                            <span aria-hidden="true">&laquo;&laquo;</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?q={{ query }}&page={{ pacientes.previous_page_number }}{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.genero %}&genero={{ filtros.genero }}{% endif %}" aria-label="Anterior">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" aria-label="Primera">
+                                            <span aria-hidden="true">&laquo;&laquo;</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" aria-label="Anterior">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for i in pacientes.paginator.page_range %}
+                                    {% if pacientes.number == i %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ i }}</span>
+                                        </li>
+                                    {% elif i > pacientes.number|add:'-3' and i < pacientes.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?q={{ query }}&page={{ i }}{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.genero %}&genero={{ filtros.genero }}{% endif %}">{{ i }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if pacientes.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?q={{ query }}&page={{ pacientes.next_page_number }}{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.genero %}&genero={{ filtros.genero }}{% endif %}" aria-label="Siguiente">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?q={{ query }}&page={{ pacientes.paginator.num_pages }}{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.genero %}&genero={{ filtros.genero }}{% endif %}" aria-label="Última">
+                                            <span aria-hidden="true">&raquo;&raquo;</span>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" aria-label="Siguiente">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" aria-label="Última">
+                                            <span aria-hidden="true">&raquo;&raquo;</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Pacientes Activos (Tab) -->
+            <div class="tab-pane fade" id="activos">
+                <div class="result-count mb-4">
+                    {% with activos=pacientes|dictsort:"estado"|dictsortreversed:"estado" %}
+                    {% with count=activos|length %}
+                    <strong>{{ count }} paciente{% if count != 1 %}s{% endif %}</strong> activo{% if count != 1 %}s{% endif %} encontrado{% if count != 1 %}s{% endif %}
+                    {% endwith %}
+                    {% endwith %}
+                </div>
+                
+                {% for paciente in pacientes %}
+                    {% if paciente.estado == 'activo' %}
+                    <div class="result-item">
+                        <div class="row align-items-center">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar me-3">
+                                        {% if paciente.foto %}
+                                            <img src="{{ paciente.foto.url }}" alt="{{ paciente.get_nombre_completo }}">
+                                        {% else %}
+                                            {{ paciente.get_iniciales }}
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <div class="patient-name">{{ paciente.get_nombre_completo }}</div>
+                                        <div class="patient-details">
+                                            <span class="me-3">CI: {{ paciente.ci }}</span>
+                                            <span>{{ paciente.get_edad }} años</span>
+                                        </div>
+                                        <div class="patient-contact">
+                                            <i class="fas fa-phone-alt me-1"></i> {{ paciente.telefono }}
+                                            {% if paciente.email %}
+                                                <span class="ms-3"><i class="fas fa-envelope me-1"></i> {{ paciente.email }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3 mb-md-0">
+                                <div class="d-flex flex-column">
+                                    <span class="badge-status badge-active mb-2">
+                                        {{ paciente.get_estado_display }}
+                                    </span>
+                                    <span class="small text-muted">Registro: {{ paciente.fecha_registro|date:"d/m/Y" }}</span>
+                                    {% if paciente.ultima_visita %}
+                                        <span class="small text-muted">Última visita: {{ paciente.ultima_visita|date:"d/m/Y" }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-md-end">
+                                <a href="{% url 'pacientes:historia_clinica' paciente.id %}" class="action-button" title="Ver Historia Clínica">
+                                    <i class="fas fa-notes-medical"></i>
+                                </a>
+                                <a href="{% url 'pacientes:detalle_paciente' paciente.id %}" class="action-button" title="Ver Detalles">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'pacientes:editar_paciente' paciente.id %}" class="action-button" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button class="action-button-text mt-2">
+                                    <i class="fas fa-calendar-plus"></i>Nueva Cita
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% empty %}
+                    <!-- Mensaje cuando no hay resultados -->
+                    <div class="info-message">
+                        <i class="fas fa-user-slash info-icon"></i>
+                        <h4>No se encontraron pacientes activos</h4>
+                        <p class="text-muted">No hay pacientes activos con los criterios de búsqueda especificados.</p>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pacientes En Tratamiento (Tab) -->
+            <div class="tab-pane fade" id="tratamiento">
+                <div class="result-count mb-4">
+                    {% with tratamiento_count=pacientes|dictsort:"estado"|dictsortreversed:"estado"|length %}
+                    <strong>{{ tratamiento_count }} paciente{% if tratamiento_count != 1 %}s{% endif %}</strong> en tratamiento encontrado{% if tratamiento_count != 1 %}s{% endif %}
+                    {% endwith %}
+                </div>
+                
+                {% for paciente in pacientes %}
+                    {% if paciente.estado == 'tratamiento' %}
+                    <div class="result-item">
+                        <div class="row align-items-center">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar me-3">
+                                        {% if paciente.foto %}
+                                            <img src="{{ paciente.foto.url }}" alt="{{ paciente.get_nombre_completo }}">
+                                        {% else %}
+                                            {{ paciente.get_iniciales }}
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <div class="patient-name">{{ paciente.get_nombre_completo }}</div>
+                                        <div class="patient-details">
+                                            <span class="me-3">CI: {{ paciente.ci }}</span>
+                                            <span>{{ paciente.get_edad }} años</span>
+                                        </div>
+                                        <div class="patient-contact">
+                                            <i class="fas fa-phone-alt me-1"></i> {{ paciente.telefono }}
+                                            {% if paciente.email %}
+                                                <span class="ms-3"><i class="fas fa-envelope me-1"></i> {{ paciente.email }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3 mb-md-0">
+                                <div class="d-flex flex-column">
+                                    <span class="badge-status badge-treatment mb-2">
+                                        {{ paciente.get_estado_display }}
+                                    </span>
+                                    <span class="small text-muted">Registro: {{ paciente.fecha_registro|date:"d/m/Y" }}</span>
+                                    {% if paciente.ultima_visita %}
+                                        <span class="small text-muted">Última visita: {{ paciente.ultima_visita|date:"d/m/Y" }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-md-end">
+                                <a href="{% url 'pacientes:historia_clinica' paciente.id %}" class="action-button" title="Ver Historia Clínica">
+                                    <i class="fas fa-notes-medical"></i>
+                                </a>
+                                <a href="{% url 'pacientes:detalle_paciente' paciente.id %}" class="action-button" title="Ver Detalles">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'pacientes:editar_paciente' paciente.id %}" class="action-button" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button class="action-button-text mt-2">
+                                    <i class="fas fa-calendar-plus"></i>Nueva Cita
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% empty %}
+                    <!-- Mensaje cuando no hay resultados -->
+                    <div class="info-message">
+                        <i class="fas fa-user-slash info-icon"></i>
+                        <h4>No se encontraron pacientes en tratamiento</h4>
+                        <p class="text-muted">No hay pacientes en tratamiento con los criterios de búsqueda especificados.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle de búsqueda avanzada
+        const toggleAdvanced = document.getElementById('toggle-advanced');
+        const advancedSearch = document.getElementById('advanced-search');
+        
+        toggleAdvanced.addEventListener('click', function() {
+            if (advancedSearch.style.display === 'block') {
+                advancedSearch.style.display = 'none';
+                toggleAdvanced.innerHTML = '<i class="fas fa-sliders-h"></i>Búsqueda Avanzada';
+            } else {
+                advancedSearch.style.display = 'block';
+                toggleAdvanced.innerHTML = '<i class="fas fa-times"></i>Cerrar Filtros';
+            }
+        });
+        
+        // Mostrar la búsqueda avanzada si hay filtros aplicados
+        {% if filtros.estado or filtros.genero or filtros.fecha or filtros.ciudad or filtros.seguro or filtros.edad_min or filtros.edad_max %}
+            advancedSearch.style.display = 'block';
+            toggleAdvanced.innerHTML = '<i class="fas fa-times"></i>Cerrar Filtros';
+        {% endif %}
+        
+        // Activar tooltips de Bootstrap
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+    });
+</script>
+{% endblock %}

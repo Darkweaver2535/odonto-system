@@ -1,0 +1,765 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalles del Paciente{% endblock %}
+
+{% block extra_css %}
+<style>
+    .patient-header {
+        background: linear-gradient(145deg, #f8faff, #f0f4fa);
+        border-radius: 18px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        overflow: hidden;
+        border: none;
+    }
+    
+    .patient-header:hover {
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        transform: translateY(-5px);
+    }
+    
+    .patient-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 24px;
+        object-fit: cover;
+        margin-right: 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .patient-header:hover .patient-avatar {
+        transform: scale(1.05);
+        border-radius: 50%;
+    }
+    
+    .patient-name {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--dark);
+    }
+    
+    .patient-details {
+        font-size: 1rem;
+        color: var(--gray-600);
+    }
+    
+    .detail-section {
+        background: white;
+        border-radius: 18px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        overflow: hidden;
+        border: none;
+    }
+    
+    .detail-section:hover {
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        transform: translateY(-5px);
+    }
+    
+    .section-header {
+        background: linear-gradient(145deg, #f8faff, #f0f4fa);
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .section-body {
+        padding: 1.5rem;
+    }
+    
+    .info-group {
+        margin-bottom: 1.25rem;
+    }
+    
+    .info-label {
+        font-size: 0.85rem;
+        color: var(--gray-600);
+        margin-bottom: 0.35rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .info-value {
+        font-size: 1rem;
+        color: var(--dark);
+        font-weight: 500;
+    }
+    
+    .badge-status {
+        padding: 0.4rem 1rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .badge-status i {
+        margin-right: 0.5rem;
+    }
+    
+    .badge-active {
+        background-color: rgba(40, 167, 69, 0.1);
+        color: var(--success);
+    }
+    
+    .badge-inactive {
+        background-color: rgba(108, 117, 125, 0.1);
+        color: var(--gray-800);
+    }
+    
+    .badge-treatment {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #d6a206;
+    }
+    
+    .badge-defaulter {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: var(--danger);
+    }
+    
+    .history-item {
+        padding: 1rem;
+        border-radius: 12px;
+        border: 1px solid var(--gray-200);
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .history-item:hover {
+        background-color: rgba(240, 249, 255, 0.5);
+        border-color: var(--primary);
+        transform: translateY(-3px);
+    }
+    
+    .history-date {
+        font-size: 0.85rem;
+        color: var(--gray-600);
+    }
+    
+    .history-title {
+        font-weight: 600;
+        margin: 0.5rem 0;
+    }
+    
+    .history-description {
+        font-size: 0.9rem;
+        color: var(--gray-800);
+    }
+    
+    .tab-content {
+        padding-top: 1.5rem;
+    }
+    
+    .action-bar {
+        margin-bottom: 1.5rem;
+    }
+    
+    .btn-action {
+        margin-left: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-2">Detalles del Paciente</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'pacientes:lista_pacientes' %}">Pacientes</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Detalles del Paciente</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="action-bar">
+        <a href="{% url 'pacientes:editar_paciente' paciente.id %}" class="btn btn-outline-primary rounded-pill">
+            <i class="fas fa-edit me-2"></i>Editar
+        </a>
+        <div class="btn-group">
+            <button type="button" class="btn btn-primary rounded-pill dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-plus me-2"></i>Acciones
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#"><i class="fas fa-calendar-plus me-2"></i>Nueva Cita</a></li>
+                <li><a class="dropdown-item" href="{% url 'pacientes:historia_clinica' paciente.id %}"><i class="fas fa-notes-medical me-2"></i>Historia Clínica</a></li>
+                <li><a class="dropdown-item" href="#"><i class="fas fa-clipboard-check me-2"></i>Nuevo Tratamiento</a></li>
+                <li><a class="dropdown-item" href="#"><i class="fas fa-file-invoice-dollar me-2"></i>Generar Factura</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-user-slash me-2"></i>Desactivar Paciente</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Información Principal del Paciente -->
+<div class="patient-header">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="d-flex">
+                {% if paciente.foto %}
+                    <img src="{{ paciente.foto.url }}" alt="{{ paciente.get_nombre_completo }}" class="patient-avatar">
+                {% else %}
+                    <div class="patient-avatar d-flex align-items-center justify-content-center bg-primary text-white">
+                        {{ paciente.get_iniciales }}
+                    </div>
+                {% endif %}
+                <div>
+                    <h2 class="patient-name">{{ paciente.get_nombre_completo }}</h2>
+                    <div class="patient-details mb-3">
+                        <span class="me-3"><i class="far fa-id-card me-1"></i> CI: {{ paciente.ci }}</span>
+                        <span class="me-3"><i class="fas fa-birthday-cake me-1"></i> {{ paciente.get_edad }} años ({{ paciente.fecha_nacimiento|date:"d/m/Y" }})</span>
+                        <span><i class="fas fa-{% if paciente.genero == 'masculino' %}mars{% elif paciente.genero == 'femenino' %}venus{% else %}genderless{% endif %} me-1"></i> {{ paciente.get_genero_display }}</span>
+                    </div>
+                    <div>
+                        <span class="badge-status 
+                            {% if paciente.estado == 'activo' %}badge-active
+                            {% elif paciente.estado == 'inactivo' %}badge-inactive
+                            {% elif paciente.estado == 'tratamiento' %}badge-treatment
+                            {% elif paciente.estado == 'moroso' %}badge-defaulter{% endif %}">
+                            <i class="fas fa-{% if paciente.estado == 'activo' %}check-circle{% elif paciente.estado == 'inactivo' %}user-slash{% elif paciente.estado == 'tratamiento' %}procedures{% else %}exclamation-circle{% endif %}"></i>
+                            {{ paciente.get_estado_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mt-3 mt-md-0">
+            <div class="card h-100 border-0 bg-light">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Última visita:</span>
+                        <span class="fw-medium">{{ paciente.ultima_visita|date:"d/m/Y"|default:"Sin visitas registradas" }}</span>
+                    </div>
+                    <!-- Aquí podrías mostrar la próxima cita si tienes esa información -->
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Próxima cita:</span>
+                        <span class="fw-medium">{{ proxima_cita|date:"d/m/Y - H:i"|default:"Sin citas programadas" }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Fecha de registro:</span>
+                        <span class="fw-medium">{{ paciente.fecha_registro|date:"d/m/Y" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pestañas de Información -->
+<ul class="nav nav-tabs" id="patientTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab">
+            <i class="fas fa-info-circle me-2"></i>Información Personal
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="medical-tab" data-bs-toggle="tab" data-bs-target="#medical" type="button" role="tab">
+            <i class="fas fa-heartbeat me-2"></i>Información Médica
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab">
+            <i class="fas fa-history me-2"></i>Historial de Visitas
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="billing-tab" data-bs-toggle="tab" data-bs-target="#billing" type="button" role="tab">
+            <i class="fas fa-file-invoice-dollar me-2"></i>Facturación
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="patientTabsContent">
+    <!-- Tab de Información Personal -->
+    <div class="tab-pane fade show active" id="info" role="tabpanel" aria-labelledby="info-tab">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="detail-section">
+                    <div class="section-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-user-circle me-2 text-primary"></i>Datos Personales
+                        </h5>
+                    </div>
+                    <div class="section-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-group">
+                                    <div class="info-label">Nombres</div>
+                                    <div class="info-value">{{ paciente.nombres }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-group">
+                                    <div class="info-label">Apellidos</div>
+                                    <div class="info-value">{{ paciente.apellidos }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-group">
+                                    <div class="info-label">Cédula de Identidad</div>
+                                    <div class="info-value">{{ paciente.ci }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-group">
+                                    <div class="info-label">Fecha de Nacimiento</div>
+                                    <div class="info-value">{{ paciente.fecha_nacimiento|date:"d/m/Y" }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-group">
+                                    <div class="info-label">Edad</div>
+                                    <div class="info-value">{{ paciente.get_edad }} años</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-group">
+                                    <div class="info-label">Género</div>
+                                    <div class="info-value">{{ paciente.get_genero_display }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="section-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-address-card me-2 text-primary"></i>Información de Contacto
+                        </h5>
+                    </div>
+                    <div class="section-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-group">
+                                    <div class="info-label">Teléfono</div>
+                                    <div class="info-value">{{ paciente.telefono }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-group">
+                                    <div class="info-label">Email</div>
+                                    <div class="info-value">{{ paciente.email|default:"No registrado" }}</div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="info-group">
+                                    <div class="info-label">Dirección</div>
+                                    <div class="info-value">{{ paciente.direccion }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-group">
+                                    <div class="info-label">Ciudad / Departamento</div>
+                                    <div class="info-value">{{ paciente.ciudad }} / {{ paciente.departamento }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-group">
+                                    <div class="info-label">País</div>
+                                    <div class="info-value">{{ paciente.pais }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="detail-section">
+                    <div class="section-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-ambulance me-2 text-primary"></i>Contacto de Emergencia
+                        </h5>
+                    </div>
+                    <div class="section-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-group">
+                                    <div class="info-label">Nombre Completo</div>
+                                    <div class="info-value">{{ paciente.emergencia_nombre }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-group">
+                                    <div class="info-label">Teléfono</div>
+                                    <div class="info-value">{{ paciente.emergencia_telefono }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-group">
+                                    <div class="info-label">Parentesco</div>
+                                    <div class="info-value">{{ paciente.get_emergencia_parentesco_display }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="section-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-shield-alt me-2 text-primary"></i>Seguro Médico
+                        </h5>
+                    </div>
+                    <div class="section-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-group">
+                                    <div class="info-label">¿Tiene Seguro?</div>
+                                    <div class="info-value">{{ paciente.tiene_seguro|yesno:"Sí,No" }}</div>
+                                </div>
+                            </div>
+                            {% if paciente.tiene_seguro %}
+                            <div class="col-md-6">
+                                <div class="info-group">
+                                    <div class="info-label">Compañía</div>
+                                    <div class="info-value">{{ paciente.seguro_compania }}</div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="info-group">
+                                    <div class="info-label">Número de Póliza</div>
+                                    <div class="info-value">{{ paciente.seguro_poliza }}</div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="info-group">
+                                    <div class="info-label">Cobertura</div>
+                                    <div class="info-value">{{ paciente.seguro_cobertura|default:"No especificada" }}</div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="section-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-clipboard me-2 text-primary"></i>Observaciones
+                        </h5>
+                    </div>
+                    <div class="section-body">
+                        <p>{{ paciente.observaciones|default:"No hay observaciones registradas para este paciente."|linebreaksbr }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tab de Información Médica -->
+    <div class="tab-pane fade" id="medical" role="tabpanel" aria-labelledby="medical-tab">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="detail-section">
+                    <div class="section-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-heartbeat me-2 text-primary"></i>Datos Médicos Generales
+                        </h5>
+                    </div>
+                    <div class="section-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-group">
+                                    <div class="info-label">Grupo Sanguíneo</div>
+                                    <div class="info-value">{{ paciente.get_grupo_sanguineo_display|default:"No registrado" }}</div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="info-group">
+                                    <div class="info-label">Medicamentos Actuales</div>
+                                    <div class="info-value">{{ paciente.medicamentos|default:"Ninguno registrado"|linebreaksbr }}</div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="info-group">
+                                    <div class="info-label">Alergias</div>
+                                    <div class="info-value">{{ paciente.alergias|default:"Ninguna registrada"|linebreaksbr }}</div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="info-group">
+                                    <div class="info-label">Enfermedades Crónicas</div>
+                                    <div class="info-value">{{ paciente.enfermedades_cronicas|default:"Ninguna registrada"|linebreaksbr }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="section-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-clipboard-list me-2 text-primary"></i>Tratamientos Activos
+                        </h5>
+                    </div>
+                    <div class="section-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tratamiento</th>
+                                        <th>Inicio</th>
+                                        <th>Progreso</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Ortodoncia</td>
+                                        <td>15/05/2025</td>
+                                        <td>
+                                            <div class="progress" style="height: 8px;">
+                                                <div class="progress-bar bg-primary" role="progressbar" style="width: 65%;" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <span class="small">65%</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Blanqueamiento</td>
+                                        <td>10/06/2025</td>
+                                        <td>
+                                            <div class="progress" style="height: 8px;">
+                                                <div class="progress-bar bg-primary" role="progressbar" style="width: 30%;" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <span class="small">30%</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="detail-section">
+                    <div class="section-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-teeth me-2 text-primary"></i>Estado Dental
+                        </h5>
+                    </div>
+                    <div class="section-body">
+                        <p class="mb-3">Haga clic en el botón para ver el odontograma completo del paciente.</p>
+                        <button class="btn btn-outline-primary">
+                            <i class="fas fa-teeth me-2"></i>Ver Odontograma
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="section-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-x-ray me-2 text-primary"></i>Exámenes Complementarios
+                        </h5>
+                    </div>
+                    <div class="section-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Examen</th>
+                                        <th>Fecha</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Radiografía Panorámica</td>
+                                        <td>15/05/2025</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Radiografía Periapical</td>
+                                        <td>20/06/2025</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tab de Historial de Visitas -->
+    <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="history-tab">
+        <div class="detail-section">
+            <div class="section-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar-check me-2 text-primary"></i>Historial de Visitas
+                </h5>
+            </div>
+            <div class="section-body">
+                <div class="history-item">
+                    <div class="history-date">
+                        <i class="far fa-calendar-alt me-1"></i>20/06/2025 - 10:30
+                    </div>
+                    <h5 class="history-title">Ajuste de Brackets</h5>
+                    <div class="history-description">
+                        <p>Se realizó el ajuste mensual de brackets. Se cambiaron elásticos y se ajustó el arco. La paciente refiere molestia leve, se le recomendó analgésico en caso necesario.</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary-light">Dr. Roberto Suárez</span>
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-file-medical me-1"></i>Ver Detalle
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="history-item">
+                    <div class="history-date">
+                        <i class="far fa-calendar-alt me-1"></i>10/06/2025 - 11:15
+                    </div>
+                    <h5 class="history-title">Primera Sesión de Blanqueamiento</h5>
+                    <div class="history-description">
+                        <p>Se realizó la primera sesión de blanqueamiento dental con láser. Se tomaron fotografías antes del procedimiento para comparación posterior. Se dieron indicaciones de cuidado post-procedimiento.</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary-light">Dra. Carla Mendoza</span>
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-file-medical me-1"></i>Ver Detalle
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="history-item">
+                    <div class="history-date">
+                        <i class="far fa-calendar-alt me-1"></i>15/05/2025 - 09:00
+                    </div>
+                    <h5 class="history-title">Consulta Inicial y Colocación de Brackets</h5>
+                    <div class="history-description">
+                        <p>Primera visita. Se realizó anamnesis completa, examen clínico, radiografías panorámicas y se colocaron brackets en ambas arcadas. Se explicó el plan de tratamiento de ortodoncia a 18 meses.</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary-light">Dr. Roberto Suárez</span>
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-file-medical me-1"></i>Ver Detalle
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tab de Facturación -->
+    <div class="tab-pane fade" id="billing" role="tabpanel" aria-labelledby="billing-tab">
+        <div class="detail-section">
+            <div class="section-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-invoice-dollar me-2 text-primary"></i>Historial de Facturación
+                </h5>
+            </div>
+            <div class="section-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#Factura</th>
+                                <th>Fecha</th>
+                                <th>Concepto</th>
+                                <th>Monto</th>
+                                <th>Estado</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>F-2025-0145</td>
+                                <td>20/06/2025</td>
+                                <td>Ajuste de Brackets</td>
+                                <td>$50.00</td>
+                                <td><span class="badge bg-success">Pagado</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>F-2025-0132</td>
+                                <td>10/06/2025</td>
+                                <td>Primera Sesión de Blanqueamiento</td>
+                                <td>$120.00</td>
+                                <td><span class="badge bg-success">Pagado</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>F-2025-0095</td>
+                                <td>15/05/2025</td>
+                                <td>Consulta Inicial y Colocación de Brackets</td>
+                                <td>$350.00</td>
+                                <td><span class="badge bg-success">Pagado</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title mb-3">Resumen Financiero</h6>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Total facturado:</span>
+                                    <span class="fw-bold">$520.00</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Total pagado:</span>
+                                    <span class="fw-bold text-success">$520.00</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>Saldo pendiente:</span>
+                                    <span class="fw-bold text-primary">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Activar los tabs de Bootstrap
+        const triggerTabList = [].slice.call(document.querySelectorAll('#patientTabs button'))
+        triggerTabList.forEach(function (triggerEl) {
+            const tabTrigger = new bootstrap.Tab(triggerEl)
+            triggerEl.addEventListener('click', function (event) {
+                event.preventDefault()
+                tabTrigger.show()
+            })
+        });
+    });
+</script>
+{% endblock %}

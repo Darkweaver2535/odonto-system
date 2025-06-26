@@ -1,0 +1,497 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Pacientes{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+<style>
+    /* Mantener los estilos existentes */
+    .card-pacientes {
+        border-radius: 18px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        border: none;
+    }
+    
+    .card-pacientes:hover {
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        transform: translateY(-5px);
+    }
+    
+    .card-header {
+        background: linear-gradient(145deg, #f8faff, #f0f4fa);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1.25rem 1.5rem;
+        border-radius: 18px 18px 0 0;
+    }
+    
+    .filter-container {
+        background-color: rgba(240, 249, 255, 0.5);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        background-color: var(--primary);
+    }
+    
+    .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 12px;
+    }
+    
+    .table-row-hover:hover .avatar {
+        transform: scale(1.1);
+        border-radius: 50%;
+    }
+    
+    .badge-status {
+        padding: 0.4rem 0.8rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .badge-active {
+        background-color: rgba(40, 167, 69, 0.1);
+        color: var(--success);
+    }
+    
+    .badge-inactive {
+        background-color: rgba(108, 117, 125, 0.1);
+        color: var(--gray-800);
+    }
+    
+    .badge-treatment {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #d6a206;
+    }
+    
+    .badge-defaulter {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: var(--danger);
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: 50px;
+        padding: 0.3rem 0.8rem;
+        margin: 0 0.2rem;
+        border: none;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: var(--primary);
+        color: white !important;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background: rgba(26, 145, 209, 0.1);
+        color: var(--primary) !important;
+    }
+    
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(240, 249, 255, 0.8);
+        color: var(--primary);
+        border: none;
+        transition: all 0.2s ease;
+    }
+    
+    .action-btn:hover {
+        background-color: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    /* Custom DataTable styling */
+    table.dataTable {
+        border-collapse: collapse !important;
+        margin-bottom: 0 !important;
+    }
+    
+    .table thead th {
+        border-bottom: none;
+        background: rgba(240, 249, 255, 0.5);
+        color: var(--gray-800);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+    }
+    
+    .table td {
+        padding: 1rem 0.75rem;
+        vertical-align: middle;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .dataTables_filter input {
+        border-radius: 50px;
+        padding: 0.5rem 1rem;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .dataTables_length select {
+        border-radius: 50px;
+        padding: 0.5rem 2rem 0.5rem 1rem;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header d-flex justify-content-between align-items-center flex-column flex-md-row mb-4">
+    <div>
+        <h1 class="mb-2">Lista de Pacientes</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="#">Pacientes</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Lista de Pacientes</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="mt-3 mt-md-0">
+        <a href="{% url 'pacientes:nuevo_paciente' %}" class="btn btn-primary rounded-pill px-4">
+            <i class="fas fa-user-plus me-2"></i>Nuevo Paciente
+        </a>
+    </div>
+</div>
+
+<!-- Mensajes de sistema -->
+{% if messages %}
+<div class="row mb-3">
+    <div class="col-12">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Filtros -->
+<div class="filter-container mb-4">
+    <div class="row g-3">
+        <div class="col-md-3">
+            <label for="filter-status" class="form-label small">Estado</label>
+            <select class="form-select" id="filter-status" name="estado">
+                <option value="" selected>Todos los estados</option>
+                <option value="activo" {% if filtros.estado == 'activo' %}selected{% endif %}>Activo</option>
+                <option value="inactivo" {% if filtros.estado == 'inactivo' %}selected{% endif %}>Inactivo</option>
+                <option value="tratamiento" {% if filtros.estado == 'tratamiento' %}selected{% endif %}>En Tratamiento</option>
+                <option value="moroso" {% if filtros.estado == 'moroso' %}selected{% endif %}>Moroso</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="filter-date" class="form-label small">Fecha de Registro</label>
+            <select class="form-select" id="filter-date" name="fecha">
+                <option value="" selected>Todos los períodos</option>
+                <option value="today">Hoy</option>
+                <option value="week">Esta semana</option>
+                <option value="month">Este mes</option>
+                <option value="quarter">Últimos 3 meses</option>
+                <option value="year">Este año</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="filter-gender" class="form-label small">Género</label>
+            <select class="form-select" id="filter-gender" name="genero">
+                <option value="" selected>Todos</option>
+                <option value="masculino" {% if filtros.genero == 'masculino' %}selected{% endif %}>Masculino</option>
+                <option value="femenino" {% if filtros.genero == 'femenino' %}selected{% endif %}>Femenino</option>
+                <option value="otro" {% if filtros.genero == 'otro' %}selected{% endif %}>Otro</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="filter-insurance" class="form-label small">Seguro Médico</label>
+            <select class="form-select" id="filter-insurance" name="seguro">
+                <option value="" selected>Todos</option>
+                <option value="yes">Con Seguro</option>
+                <option value="no">Sin Seguro</option>
+            </select>
+        </div>
+        <div class="col-12 text-end">
+            <button type="button" class="btn btn-outline-secondary btn-sm me-2" id="reset-filters">
+                <i class="fas fa-redo me-1"></i>Reiniciar Filtros
+            </button>
+            <button type="button" class="btn btn-primary btn-sm" id="apply-filters">
+                <i class="fas fa-filter me-1"></i>Aplicar Filtros
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Card de Pacientes -->
+<div class="card card-pacientes">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-users me-2 text-primary"></i>Pacientes Registrados
+        </h5>
+        <div>
+            <button class="btn btn-sm btn-outline-primary me-2">
+                <i class="fas fa-file-excel me-1"></i>Exportar
+            </button>
+            <button class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-print me-1"></i>Imprimir
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="pacientes-table" class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Paciente</th>
+                        <th>CI</th>
+                        <th>Género</th>
+                        <th>Contacto</th>
+                        <th>F. Registro</th>
+                        <th>F. Nacimiento</th>
+                        <th>Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if pacientes %}
+                        {% for paciente in pacientes %}
+                        <tr class="table-row-hover">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar me-3">
+                                        {% if paciente.foto %}
+                                            <img src="{{ paciente.foto.url }}" alt="{{ paciente.get_nombre_completo }}">
+                                        {% else %}
+                                            {{ paciente.get_iniciales }}
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <div class="fw-medium">{{ paciente.get_nombre_completo }}</div>
+                                        <div class="small text-muted">{{ paciente.get_edad }} años</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ paciente.ci }}</td>
+                            <td>{{ paciente.get_genero_display }}</td>
+                            <td>
+                                <div>{{ paciente.telefono }}</div>
+                                <div class="small text-muted">{{ paciente.email|default:"" }}</div>
+                            </td>
+                            <td>{{ paciente.fecha_registro|date:"d/m/Y" }}</td>
+                            <td>{{ paciente.fecha_nacimiento|date:"d/m/Y" }}</td>
+                            <td>
+                                <span class="badge-status 
+                                    {% if paciente.estado == 'activo' %}badge-active
+                                    {% elif paciente.estado == 'inactivo' %}badge-inactive
+                                    {% elif paciente.estado == 'tratamiento' %}badge-treatment
+                                    {% elif paciente.estado == 'moroso' %}badge-defaulter{% endif %}">
+                                    {{ paciente.get_estado_display }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <a href="{% url 'pacientes:detalle_paciente' paciente.id %}" class="action-btn" title="Ver Detalles">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'pacientes:editar_paciente' paciente.id %}" class="action-btn ms-1" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'pacientes:historia_clinica' paciente.id %}" class="action-btn ms-1" title="Historia Clínica">
+                                    <i class="fas fa-notes-medical"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center">
+                                <div class="py-4">
+                                    <i class="fas fa-user-slash fa-3x text-muted mb-3"></i>
+                                    <h5>No se encontraron pacientes</h5>
+                                    <p class="text-muted">Aún no hay pacientes registrados en el sistema o ninguno coincide con los filtros aplicados.</p>
+                                    <a href="{% url 'pacientes:nuevo_paciente' %}" class="btn btn-primary mt-2">
+                                        <i class="fas fa-user-plus me-2"></i>Registrar Nuevo Paciente
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Paginación -->
+        {% if pacientes.has_other_pages %}
+        <div class="mt-4">
+            <nav aria-label="Paginación de pacientes">
+                <ul class="pagination justify-content-center">
+                    {% if pacientes.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.genero %}&genero={{ filtros.genero }}{% endif %}" aria-label="Primera">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ pacientes.previous_page_number }}{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.genero %}&genero={{ filtros.genero }}{% endif %}" aria-label="Anterior">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" aria-label="Primera">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" aria-label="Anterior">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for i in pacientes.paginator.page_range %}
+                        {% if pacientes.number == i %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ i }}</span>
+                            </li>
+                        {% elif i > pacientes.number|add:'-3' and i < pacientes.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ i }}{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.genero %}&genero={{ filtros.genero }}{% endif %}">{{ i }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if pacientes.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ pacientes.next_page_number }}{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.genero %}&genero={{ filtros.genero }}{% endif %}" aria-label="Siguiente">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ pacientes.paginator.num_pages }}{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.genero %}&genero={{ filtros.genero }}{% endif %}" aria-label="Última">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" aria-label="Siguiente">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" aria-label="Última">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Inicializar la tabla con DataTables solo si hay más de 10 pacientes
+        // para no duplicar la paginación
+        {% if pacientes.paginator.count > 10 %}
+            $('#pacientes-table').DataTable({
+                language: {
+                    search: "Buscar:",
+                    lengthMenu: "Mostrar _MENU_ registros por página",
+                    zeroRecords: "No se encontraron pacientes",
+                    info: "Mostrando página _PAGE_ de _PAGES_",
+                    infoEmpty: "No hay registros disponibles",
+                    infoFiltered: "(filtrado de _MAX_ registros totales)",
+                    paginate: {
+                        first: "Primero",
+                        last: "Último",
+                        next: "<i class='fas fa-chevron-right'></i>",
+                        previous: "<i class='fas fa-chevron-left'></i>"
+                    }
+                },
+                order: [[4, 'desc']], // Ordenar por fecha de registro descendente
+                responsive: true,
+                columnDefs: [
+                    { orderable: false, targets: 7 } // No permitir ordenamiento en columna de acciones
+                ],
+                dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                     "<'row'<'col-sm-12'tr>>" +
+                     "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
+                paging: true
+            });
+        {% else %}
+            // Si hay pocos pacientes, solo inicializamos la tabla para las búsquedas
+            // pero desactivamos la paginación para evitar conflictos con Django
+            $('#pacientes-table').DataTable({
+                language: {
+                    search: "Buscar:",
+                    zeroRecords: "No se encontraron pacientes"
+                },
+                order: [[4, 'desc']], // Ordenar por fecha de registro descendente
+                responsive: true,
+                columnDefs: [
+                    { orderable: false, targets: 7 } // No permitir ordenamiento en columna de acciones
+                ],
+                dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                     "<'row'<'col-sm-12'tr>>",
+                paging: false,
+                info: false
+            });
+        {% endif %}
+        
+        // Manejar filtros
+        $('#apply-filters').on('click', function() {
+            const estado = $('#filter-status').val();
+            const genero = $('#filter-gender').val();
+            const fecha = $('#filter-date').val();
+            const seguro = $('#filter-insurance').val();
+            
+            let url = '?';
+            if (estado) url += `estado=${estado}&`;
+            if (genero) url += `genero=${genero}&`;
+            if (fecha) url += `fecha=${fecha}&`;
+            if (seguro) url += `seguro=${seguro}&`;
+            
+            // Eliminar el último '&' si existe
+            if (url.endsWith('&')) {
+                url = url.slice(0, -1);
+            }
+            
+            window.location.href = url;
+        });
+        
+        // Reiniciar filtros
+        $('#reset-filters').on('click', function() {
+            window.location.href = '?';
+        });
+    });
+</script>
+{% endblock %}

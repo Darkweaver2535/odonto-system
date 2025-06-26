@@ -47,6 +47,9 @@ INSTALLED_APPS = [
     'apps.reportes',
     'apps.comunicacion',
     'apps.usuarios',
+    
+    # Third-party apps
+    'widget_tweaks',  # Añade esta línea
 ]
 
 MIDDLEWARE = [

@@ -38,6 +38,9 @@ urlpatterns = [
     # Dashboard
     path('dashboard/', login_required(TemplateView.as_view(template_name='dashboard.html')), name='dashboard'),
     
+    # Módulo de Pacientes
+    path('pacientes/', include('apps.pacientes.urls', namespace='pacientes')),
+    
     # Contraseñas
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
     path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),

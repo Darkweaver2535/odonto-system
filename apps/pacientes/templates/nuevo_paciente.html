@@ -1,0 +1,874 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+<!-- Eliminar o comentar la línea de form_filters -->
+{# {% load form_filters %} #}
+
+{% block title %}Nuevo Paciente{% endblock %}
+{% block extra_css %}
+<style>
+    /* Estilos existentes */
+    .form-section {
+        background: white;
+        border-radius: 18px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .form-section:hover {
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        transform: translateY(-5px);
+    }
+    
+    .form-section-header {
+        padding: 1.25rem 1.5rem;
+        background: linear-gradient(145deg, #f8faff, #f0f4fa);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .form-section-body {
+        padding: 1.5rem;
+    }
+    
+    .required-field::after {
+        content: "*";
+        color: var(--danger);
+        margin-left: 4px;
+    }
+    
+    .upload-area {
+        border: 2px dashed var(--gray-300);
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .upload-area:hover {
+        border-color: var(--primary);
+        background-color: rgba(26, 145, 209, 0.05);
+    }
+    
+    .upload-icon {
+        font-size: 3rem;
+        color: var(--gray-400);
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .upload-area:hover .upload-icon {
+        color: var(--primary);
+        transform: scale(1.1);
+    }
+    
+    .preview-image {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 15px;
+        margin-top: 1rem;
+    }
+    
+    .custom-select {
+        border-radius: 10px;
+    }
+    
+    .btn-section {
+        display: flex;
+        justify-content: space-between;
+        padding: 1.5rem;
+    }
+    
+    /* NUEVOS ESTILOS MEJORADOS PARA CAMPOS DE FORMULARIO */
+    
+    /* Estilos para inputs de texto, email, fecha, número, etc. */
+    .form-control {
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--gray-200);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.2rem rgba(26, 145, 209, 0.15);
+        transform: translateY(-1px);
+    }
+    
+    /* Estilos para campos select */
+    .form-select {
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--gray-200);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+        background-position: right 1rem center;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+    
+    .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.2rem rgba(26, 145, 209, 0.15);
+        transform: translateY(-1px);
+    }
+    
+    /* Estilizado para textareas */
+    textarea.form-control {
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        min-height: 100px;
+        resize: vertical;
+        transition: all 0.3s ease;
+    }
+    
+    /* Estilos para las etiquetas de los campos */
+    .form-label {
+        font-weight: 500;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+    
+    /* Estilo para los checkbox y radio buttons */
+    .form-check-input {
+        width: 1.2em;
+        height: 1.2em;
+        margin-top: 0.15em;
+        background-color: white;
+        border: 1px solid var(--gray-300);
+        transition: all 0.2s ease;
+    }
+    
+    .form-check-input:checked {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+    
+    .form-check-input:focus {
+        box-shadow: 0 0 0 0.2rem rgba(26, 145, 209, 0.15);
+        border-color: var(--primary);
+    }
+    
+    /* Estilos para los switches */
+    .form-switch .form-check-input {
+        width: 2.5em;
+        height: 1.3em;
+    }
+    
+    /* Estilos para campos con error */
+    .is-invalid {
+        border-color: var(--danger) !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1rem;
+    }
+    
+    /* Estilos para campos válidos */
+    .is-valid {
+        border-color: var(--success) !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1rem;
+    }
+    
+    /* Estilizado para inputs de fecha */
+    input[type="date"].form-control {
+        min-height: 46px;
+    }
+    
+    /* Agregar iconos a ciertos inputs */
+    .input-icon-container {
+        position: relative;
+    }
+    
+    .input-icon {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-500);
+        pointer-events: none;
+    }
+    
+    .has-icon {
+        padding-right: 2.5rem;
+    }
+    
+    /* Estilos para los mensajes de error */
+    .text-danger {
+        font-size: 0.85rem;
+        margin-top: 0.3rem;
+        margin-bottom: 0;
+        font-weight: 500;
+    }
+    
+    /* Animación suave para todos los campos */
+    .form-control, .form-select, .form-check-input {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0.7; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Efecto hover para inputs */
+    .form-control:hover:not(:focus):not(.is-invalid), 
+    .form-select:hover:not(:focus):not(.is-invalid) {
+        border-color: var(--gray-400);
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Estilos para placeholder */
+    ::placeholder {
+        color: var(--gray-400);
+        font-style: italic;
+        opacity: 0.7;
+    }
+    
+    /* Grupos de inputs */
+    .input-group .form-control:not(:first-child) {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+    
+    .input-group .form-control:not(:last-child) {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+    
+    .input-group-text {
+        background-color: rgba(26, 145, 209, 0.1);
+        color: var(--primary);
+        border: 1px solid var(--gray-200);
+        font-weight: 500;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+    }
+    
+    .input-group-text:first-child {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+    
+    .input-group-text:last-child {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+    
+    /* Estilos para campos deshabilitados */
+    .form-control:disabled, .form-select:disabled {
+        background-color: var(--gray-100);
+        opacity: 0.8;
+    }
+    
+    /* Estilos para campos obligatorios */
+    .form-control.required, .form-select.required {
+        border-left: 3px solid var(--danger);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="mb-2">Nuevo Paciente</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="#">Pacientes</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Nuevo Paciente</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+{% if messages %}
+<div class="row mb-3">
+    <div class="col-12">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Añadir después del bloque de mensajes -->
+{% if form.errors %}
+<div class="alert alert-danger" role="alert">
+    <h5 class="alert-heading">Errores en el formulario:</h5>
+    <ul>
+        {% for field in form %}
+            {% if field.errors %}
+                <li>{{ field.label }}: {{ field.errors|join:", " }}</li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+    {% csrf_token %}
+    
+    <!-- Cambiar la forma de renderizar los campos ocultos -->
+    <input type="hidden" name="estado" value="activo">
+    <input type="hidden" name="fecha_registro" value="{{ form.fecha_registro.initial|date:'Y-m-d' }}">
+    
+    <!-- Sección de Datos Personales -->
+    <div class="form-section">
+        <div class="form-section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-user-circle me-2 text-primary"></i>Datos Personales
+            </h5>
+        </div>
+        <div class="form-section-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="{{ form.nombres.id_for_label }}" class="form-label required-field">Nombres</label>
+                    {% render_field form.nombres class="form-control required" placeholder="Ingrese los nombres del paciente" %}
+                    <div class="invalid-feedback">
+                        Por favor ingrese los nombres del paciente.
+                    </div>
+                    {% if form.nombres.errors %}
+                    <div class="text-danger">
+                        {{ form.nombres.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label for="{{ form.apellidos.id_for_label }}" class="form-label required-field">Apellidos</label>
+                    {% render_field form.apellidos class="form-control required" placeholder="Ingrese los apellidos del paciente" %}
+                    <div class="invalid-feedback">
+                        Por favor ingrese los apellidos del paciente.
+                    </div>
+                    {% if form.apellidos.errors %}
+                    <div class="text-danger">
+                        {{ form.apellidos.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label for="{{ form.ci.id_for_label }}" class="form-label required-field">Cédula de Identidad</label>
+                    <div class="input-icon-container">
+                        {% render_field form.ci class="form-control required has-icon" placeholder="Ej. 12345678" %}
+                        <i class="fas fa-id-card input-icon"></i>
+                    </div>
+                    <div class="invalid-feedback">
+                        Por favor ingrese el número de CI.
+                    </div>
+                    {% if form.ci.errors %}
+                    <div class="text-danger">
+                        {{ form.ci.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label for="{{ form.fecha_nacimiento.id_for_label }}" class="form-label required-field">Fecha de Nacimiento</label>
+                    <div class="input-icon-container">
+                        {% render_field form.fecha_nacimiento class="form-control required has-icon" type="date" %}
+                        <i class="fas fa-calendar-alt input-icon"></i>
+                    </div>
+                    <div class="invalid-feedback">
+                        Por favor seleccione una fecha válida.
+                    </div>
+                    {% if form.fecha_nacimiento.errors %}
+                    <div class="text-danger">
+                        {{ form.fecha_nacimiento.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label for="{{ form.genero.id_for_label }}" class="form-label required-field">Género</label>
+                    {% render_field form.genero class="form-select required" %}                    <div class="invalid-feedback">
+                        Por favor seleccione un género.
+                    </div>
+                    {% if form.genero.errors %}
+                    <div class="text-danger">
+                        {{ form.genero.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sección de Información de Contacto -->
+    <div class="form-section">
+        <div class="form-section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-address-card me-2 text-primary"></i>Información de Contacto
+            </h5>
+        </div>
+        <div class="form-section-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="{{ form.telefono.id_for_label }}" class="form-label required-field">Teléfono</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-phone-alt"></i></span>
+                        {% render_field form.telefono class="form-control required" placeholder="Ej. 71234567" %}                    </div>
+                    <div class="invalid-feedback">
+                        Por favor ingrese un número de teléfono válido.
+                    </div>
+                    {% if form.telefono.errors %}
+                    <div class="text-danger">
+                        {{ form.telefono.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                        {% render_field form.email class="form-control" placeholder="correo@ejemplo.com" %}                    </div>
+                    <div class="invalid-feedback">
+                        Por favor ingrese un email válido.
+                    </div>
+                    {% if form.email.errors %}
+                    <div class="text-danger">
+                        {{ form.email.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-12">
+                    <label for="{{ form.direccion.id_for_label }}" class="form-label required-field">Dirección Completa</label>
+                    <div class="input-icon-container">
+                        {% render_field form.direccion class="form-control required" placeholder="Dirección completa del paciente" %}
+                        <i class="fas fa-map-marker-alt input-icon"></i>
+                    </div>
+                    <div class="invalid-feedback">
+                        Por favor ingrese la dirección del paciente.
+                    </div>
+                    {% if form.direccion.errors %}
+                    <div class="text-danger">
+                        {{ form.direccion.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label for="{{ form.ciudad.id_for_label }}" class="form-label required-field">Ciudad</label>
+                    {% render_field form.ciudad class="form-control required" placeholder="Ej. La Paz" %}                    {% if form.ciudad.errors %}
+                    <div class="text-danger">
+                        {{ form.ciudad.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label for="{{ form.departamento.id_for_label }}" class="form-label required-field">Departamento</label>
+                    {% render_field form.departamento class="form-control required" placeholder="Ej. La Paz" %}                    {% if form.departamento.errors %}
+                    <div class="text-danger">
+                        {{ form.departamento.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label for="{{ form.pais.id_for_label }}" class="form-label required-field">País</label>
+                    {% render_field form.pais class="form-control required" placeholder="Ej. Bolivia" %}                    {% if form.pais.errors %}
+                    <div class="text-danger">
+                        {{ form.pais.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sección de Contacto de Emergencia -->
+    <div class="form-section">
+        <div class="form-section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-ambulance me-2 text-primary"></i>Contacto de Emergencia
+            </h5>
+        </div>
+        <div class="form-section-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="{{ form.emergencia_nombre.id_for_label }}" class="form-label required-field">Nombre Completo</label>
+                    {% render_field form.emergencia_nombre class="form-control required" placeholder="Nombre completo del contacto de emergencia" %}                    <div class="invalid-feedback">
+                        Por favor ingrese el nombre del contacto de emergencia.
+                    </div>
+                    {% if form.emergencia_nombre.errors %}
+                    <div class="text-danger">
+                        {{ form.emergencia_nombre.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label for="{{ form.emergencia_telefono.id_for_label }}" class="form-label required-field">Teléfono</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-phone-alt"></i></span>
+                        {% render_field form.emergencia_telefono class="form-control required" placeholder="Ej. 71234567" %}                    </div>
+                    <div class="invalid-feedback">
+                        Por favor ingrese un número de teléfono válido.
+                    </div>
+                    {% if form.emergencia_telefono.errors %}
+                    <div class="text-danger">
+                        {{ form.emergencia_telefono.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-12">
+                    <label for="{{ form.emergencia_parentesco.id_for_label }}" class="form-label required-field">Parentesco</label>
+                    {% render_field form.emergencia_parentesco class="form-select required" %}                    <div class="invalid-feedback">
+                        Por favor seleccione un parentesco.
+                    </div>
+                    {% if form.emergencia_parentesco.errors %}
+                    <div class="text-danger">
+                        {{ form.emergencia_parentesco.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sección de Información Médica -->
+    <div class="form-section">
+        <div class="form-section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-heartbeat me-2 text-primary"></i>Datos Médicos Generales
+            </h5>
+        </div>
+        <div class="form-section-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="{{ form.grupo_sanguineo.id_for_label }}" class="form-label">Grupo Sanguíneo</label>
+                    {% render_field form.grupo_sanguineo class="form-select" %}                    {% if form.grupo_sanguineo.errors %}
+                    <div class="text-danger">
+                        {{ form.grupo_sanguineo.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label for="{{ form.medicamentos.id_for_label }}" class="form-label">Medicamentos Actuales</label>
+                    {% render_field form.medicamentos class="form-control" placeholder="Separe los medicamentos con comas" %}                    {% if form.medicamentos.errors %}
+                    <div class="text-danger">
+                        {{ form.medicamentos.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-12">
+                    <label for="{{ form.alergias.id_for_label }}" class="form-label">Alergias</label>
+                    {% render_field form.alergias class="form-control" placeholder="Describa las alergias del paciente (medicamentos, alimentos, etc.)" %}                    {% if form.alergias.errors %}
+                    <div class="text-danger">
+                        {{ form.alergias.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-12">
+                    <label for="{{ form.enfermedades_cronicas.id_for_label }}" class="form-label">Enfermedades Crónicas</label>
+                    {% render_field form.enfermedades_cronicas class="form-control" placeholder="Describa las enfermedades crónicas del paciente" %}                    {% if form.enfermedades_cronicas.errors %}
+                    <div class="text-danger">
+                        {{ form.enfermedades_cronicas.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sección de Seguro Médico -->
+    <div class="form-section">
+        <div class="form-section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-shield-alt me-2 text-primary"></i>Seguro Médico
+            </h5>
+        </div>
+        <div class="form-section-body">
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <div class="form-check form-switch mb-3">
+                    {% render_field form.tiene_seguro class="form-check-input" %}                        
+                    <label class="form-check-label" for="{{ form.tiene_seguro.id_for_label }}">Paciente cuenta con seguro médico</label>
+                    </div>
+                </div>
+                
+                <div id="seguro-fields" class="row g-3 w-100 mx-0" style="display: none;">
+                    <div class="col-md-6">
+                        <label for="{{ form.seguro_compania.id_for_label }}" class="form-label">Compañía Aseguradora</label>
+                        {% render_field form.seguro_compania class="form-control" placeholder="Nombre de la compañía aseguradora" %}
+                        {% if form.seguro_compania.errors %}
+                        <div class="text-danger">
+                            {{ form.seguro_compania.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.seguro_poliza.id_for_label }}" class="form-label">Número de Póliza</label>
+                        {% render_field form.seguro_poliza class="form-control" placeholder="Número de póliza del seguro" %}
+                        {% if form.seguro_poliza.errors %}
+                        <div class="text-danger">
+                            {{ form.seguro_poliza.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-12">
+                        <label for="{{ form.seguro_cobertura.id_for_label }}" class="form-label">Cobertura</label>
+                        {% render_field form.seguro_cobertura class="form-control" placeholder="Describa la cobertura del seguro" %}
+                        {% if form.seguro_cobertura.errors %}
+                        <div class="text-danger">
+                            {{ form.seguro_cobertura.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sección de Fotografía -->
+    <div class="form-section">
+        <div class="form-section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-camera me-2 text-primary"></i>Fotografía del Paciente
+            </h5>
+        </div>
+        <div class="form-section-body">
+            <div class="row">
+                <div class="col-md-8 mb-4">
+                    <!-- Arreglar el área de upload de foto: -->
+                    <div class="upload-area" id="upload-area">
+                        {% render_field form.foto class="d-none" %}
+                        <div id="preview-container">
+                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                            <h5>Subir fotografía</h5>
+                            <p class="text-muted">Haga clic aquí o arrastre una imagen</p>
+                            <p class="text-muted small">Formatos permitidos: JPG, PNG, JPEG</p>
+                        </div>
+                    </div>
+                    {% if form.foto.errors %}
+                    <div class="text-danger mt-2">
+                        {{ form.foto.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <span>La fotografía del paciente ayuda a su identificación rápida en el sistema y mejora la personalización de la atención.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sección de Observaciones -->
+    <div class="form-section">
+        <div class="form-section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-clipboard me-2 text-primary"></i>Observaciones Adicionales
+            </h5>
+        </div>
+        <div class="form-section-body">
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <label for="{{ form.observaciones.id_for_label }}" class="form-label">Notas Generales</label>
+                    {% render_field form.observaciones class="form-control" placeholder="Ingrese cualquier observación relevante sobre el paciente" %}
+                    {% if form.observaciones.errors %}
+                    <div class="text-danger">
+                        {{ form.observaciones.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-12 mt-3">
+                    <div class="form-check form-check-lg">
+                        {% render_field form.consentimiento_datos class="form-check-input required" %}
+                        <label class="form-check-label" for="{{ form.consentimiento_datos.id_for_label }}">
+                            El paciente ha dado su consentimiento para el tratamiento de sus datos personales y médicos
+                        </label>
+                        <div class="invalid-feedback">
+                            Debe confirmar que cuenta con el consentimiento del paciente.
+                        </div>
+                        {% if form.consentimiento_datos.errors %}
+                        <div class="text-danger">
+                            {{ form.consentimiento_datos.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Botones de Acción -->
+    <div class="form-section">
+        <div class="btn-section">
+            <a href="{% url 'pacientes:lista_pacientes' %}" class="btn btn-light btn-lg px-4 rounded-pill">Cancelar</a>
+            <div>
+                <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill" name="guardar">
+                    <i class="fas fa-save me-2"></i>Guardar Paciente
+                </button>
+                <button type="submit" class="btn btn-outline-primary btn-lg ms-2 px-4 rounded-pill" name="guardar_agregar">
+                    <i class="fas fa-user-plus me-2"></i>Guardar y Agregar Otro
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Validación del formulario
+    (function() {
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+    
+    // Manejo de la carga de fotografía
+    document.addEventListener('DOMContentLoaded', function() {
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('{{ form.foto.id_for_label }}');
+        const previewContainer = document.getElementById('preview-container');
+        
+        // Ocultar el input file original ya que usaremos nuestra propia UI
+        if (fileInput) {
+            fileInput.style.display = 'none';
+            fileInput.className = 'd-none';
+        }
+        
+        // Evento de click en el área de subida
+        if (uploadArea && fileInput) {
+            uploadArea.addEventListener('click', function() {
+                fileInput.click();
+            });
+        }
+        
+        // Evento de cambio en el input file
+        if (fileInput && previewContainer) {
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewContainer.innerHTML = `
+                            <img src="${e.target.result}" alt="Vista previa" class="preview-image">
+                            <p class="mt-2 mb-0">${file.name}</p>
+                            <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="remove-photo">
+                                <i class="fas fa-times me-1"></i>Eliminar
+                            </button>
+                        `;
+                        
+                        // Evento para eliminar la foto
+                        document.getElementById('remove-photo').addEventListener('click', function(e) {
+                            e.stopPropagation(); // Evita que el click llegue al uploadArea
+                            fileInput.value = '';
+                            previewContainer.innerHTML = `
+                                <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                <h5>Subir fotografía</h5>
+                                <p class="text-muted">Haga clic aquí o arrastre una imagen</p>
+                                <p class="text-muted small">Formatos permitidos: JPG, PNG, JPEG</p>
+                            `;
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        
+        // Drag and Drop
+        if (uploadArea) {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                uploadArea.classList.add('border-primary');
+                uploadArea.style.backgroundColor = 'rgba(26, 145, 209, 0.05)';
+            }
+            
+            function unhighlight() {
+                uploadArea.classList.remove('border-primary');
+                uploadArea.style.backgroundColor = '';
+            }
+            
+            uploadArea.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                if (fileInput) {
+                    const dt = e.dataTransfer;
+                    const files = dt.files;
+                    fileInput.files = files;
+                    
+                    // Disparar el evento change manualmente
+                    const event = new Event('change');
+                    fileInput.dispatchEvent(event);
+                }
+            }
+        }
+        
+        // Toggle de campos de seguro médico
+        const tieneSeguro = document.getElementById('{{ form.tiene_seguro.id_for_label }}');
+        const seguroFields = document.getElementById('seguro-fields');
+        
+        if (tieneSeguro && seguroFields) {
+            function toggleSeguroFields() {
+                if (tieneSeguro.checked) {
+                    seguroFields.style.display = 'flex';
+                } else {
+                    seguroFields.style.display = 'none';
+                }
+            }
+            
+            // Estado inicial
+            toggleSeguroFields();
+            
+            // Listener para cambios
+            tieneSeguro.addEventListener('change', toggleSeguroFields);
+        }
+        
+        // Animaciones para mejorar la experiencia del usuario
+        const formControls = document.querySelectorAll('.form-control, .form-select');
+        if (formControls) {
+            formControls.forEach input => {
+                // Agregar clase para campos obligatorios
+                if (input.required) {
+                    input.classList.add('required');
+                }
+                
+                // Animación al enfocar
+                input.addEventListener('focus', function() {
+                    this.closest('.col-md-12, .col-md-6, .col-md-4').style.transition = 'transform 0.3s';
+                    this.closest('.col-md-12, .col-md-6, .col-md-4').style.transform = 'translateY(-5px)';
+                });
+                
+                // Volver a posición normal al perder foco
+                input.addEventListener('blur', function() {
+                    this.closest('.col-md-12, .col-md-6, .col-md-4').style.transform = 'translateY(0)';
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}
