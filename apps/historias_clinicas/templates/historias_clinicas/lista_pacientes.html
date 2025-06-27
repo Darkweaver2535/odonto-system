@@ -1,0 +1,515 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Estilos de tarjetas de pacientes (mantenemos esto igual) */
+    .patient-card {
+        border-radius: 12px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        transition: all 0.3s;
+        overflow: hidden;
+        height: 100%;
+    }
+    
+    .patient-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    }
+    
+    .patient-card .card-body {
+        padding: 1.5rem;
+    }
+    
+    .patient-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-right: 1rem;
+        background-color: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        font-weight: 600;
+    }
+    
+    .patient-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .patient-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        color: var(--dark);
+    }
+    
+    .patient-info {
+        font-size: 0.9rem;
+        color: var(--gray-600);
+        margin-bottom: 0.25rem;
+    }
+    
+    .patient-footer {
+        background-color: rgba(26,145,209,0.05);
+        padding: 0.75rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .badge-status {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .badge-active {
+        background-color: rgba(40,167,69,0.1);
+        color: #28a745;
+    }
+    
+    .badge-inactive {
+        background-color: rgba(108,117,125,0.1);
+        color: #6c757d;
+    }
+    
+    .badge-treatment {
+        background-color: rgba(255,193,7,0.1);
+        color: #ffc107;
+    }
+    
+    .badge-defaulter {
+        background-color: rgba(220,53,69,0.1);
+        color: #dc3545;
+    }
+    
+    /* NUEVO DISEÑO: Barra de búsqueda y filtros mejorados */
+    .search-filter-container {
+        background: linear-gradient(145deg, #ffffff, #f8fbff);
+        border-radius: 16px;
+        box-shadow: 0 8px 20px rgba(0, 123, 255, 0.06);
+        padding: 24px;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .search-filter-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, #1a91d1, #38b6ff, #1a91d1);
+    }
+    
+    .search-container {
+        position: relative;
+        margin-bottom: 0;
+    }
+    
+    .search-input {
+        height: 54px;
+        border-radius: 27px;
+        padding-left: 54px;
+        padding-right: 20px;
+        font-size: 1rem;
+        border: 1px solid #e0e8f3;
+        background-color: white;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.02);
+        transition: all 0.3s ease;
+    }
+    
+    .search-input:focus {
+        box-shadow: 0 0 0 3px rgba(26, 145, 209, 0.15);
+        border-color: #1a91d1;
+    }
+    
+    .search-icon {
+        position: absolute;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #78909c;
+        font-size: 1.1rem;
+    }
+    
+    /* Nuevos filtros con toggle buttons más modernos */
+    .filters-title {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #78909c;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+    
+    .filter-toggle-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .filter-toggle-btn {
+        border: none;
+        background: transparent;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #546e7a;
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .filter-toggle-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 20px;
+        background-color: #e9ecef;
+        opacity: 0.5;
+        z-index: -1;
+        transition: all 0.2s ease;
+    }
+    
+    .filter-toggle-btn:hover::before {
+        opacity: 0.8;
+    }
+    
+    .filter-toggle-btn.active {
+        color: #1a91d1;
+        font-weight: 600;
+    }
+    
+    .filter-toggle-btn.active::before {
+        background-color: rgba(26, 145, 209, 0.1);
+        opacity: 1;
+    }
+    
+    .filter-toggle-btn i {
+        margin-right: 6px;
+        font-size: 0.9rem;
+    }
+    
+    .filter-counter {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        border-radius: 10px;
+        background-color: rgba(26, 145, 209, 0.15);
+        color: #1a91d1;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 6px;
+    }
+    
+    .filter-divider {
+        width: 1px;
+        height: 24px;
+        background-color: #e0e8f3;
+        margin: 0 8px;
+    }
+    
+    .search-result-info {
+        font-size: 0.95rem;
+        color: #546e7a;
+        margin-top: 1rem;
+        margin-bottom: 0;
+    }
+    
+    .search-result-info b {
+        color: #1a91d1;
+    }
+    
+    @media (max-width: 767px) {
+        .search-filter-container {
+            padding: 20px 15px;
+        }
+        
+        .filter-toggle-group {
+            overflow-x: auto;
+            padding-bottom: 10px;
+            flex-wrap: nowrap;
+            margin-top: 15px;
+        }
+        
+        .filter-toggle-btn {
+            flex: 0 0 auto;
+            white-space: nowrap;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="mb-2">{{ titulo }}</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="#">Historias Clínicas</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ titulo }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+{% if messages %}
+<div class="row mb-3">
+    <div class="col-12">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- NUEVO DISEÑO: Barra de búsqueda y filtros mejorados -->
+<div class="search-filter-container">
+    <div class="row">
+        <div class="col-md-6 mb-3 mb-md-0">
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchPacientes" class="form-control search-input" placeholder="Buscar por nombre, CI o teléfono..." autocomplete="off">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <p class="filters-title mb-2">Filtrar por estado</p>
+            <div class="filter-toggle-group">
+                <button type="button" class="filter-toggle-btn active" data-filter="all">
+                    <i class="fas fa-users"></i>Todos
+                    <span class="filter-counter patient-counter-all">{{ pacientes|length }}</span>
+                </button>
+                <button type="button" class="filter-toggle-btn" data-filter="activo">
+                    <i class="fas fa-check-circle"></i>Activos
+                    <span class="filter-counter patient-counter-active">0</span>
+                </button>
+                <button type="button" class="filter-toggle-btn" data-filter="tratamiento">
+                    <i class="fas fa-procedures"></i>En Tratamiento
+                    <span class="filter-counter patient-counter-treatment">0</span>
+                </button>
+                <button type="button" class="filter-toggle-btn" data-filter="inactivo">
+                    <i class="fas fa-user-slash"></i>Inactivos
+                    <span class="filter-counter patient-counter-inactive">0</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="searchResults" class="search-result-info mt-3" style="display: none;">
+        Mostrando <b id="resultCount">0</b> de {{ pacientes|length }} pacientes
+    </div>
+</div>
+
+<!-- Listado de pacientes -->
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for paciente in pacientes %}
+    <div class="col patient-item" data-estado="{{ paciente.estado }}">
+        <div class="patient-card card">
+            <div class="card-body">
+                <div class="d-flex">
+                    <div class="patient-avatar">
+                        {% if paciente.foto %}
+                            <img src="{{ paciente.foto.url }}" alt="{{ paciente.get_nombre_completo }}">
+                        {% else %}
+                            {{ paciente.get_iniciales }}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h3 class="patient-name">{{ paciente.get_nombre_completo }}</h3>
+                        <p class="patient-info">
+                            <i class="far fa-id-card me-1"></i> CI: {{ paciente.ci }}
+                        </p>
+                        <p class="patient-info">
+                            <i class="fas fa-phone-alt me-1"></i> {{ paciente.telefono }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="patient-footer">
+                <span class="badge-status 
+                    {% if paciente.estado == 'activo' %}badge-active
+                    {% elif paciente.estado == 'inactivo' %}badge-inactive
+                    {% elif paciente.estado == 'tratamiento' %}badge-treatment
+                    {% elif paciente.estado == 'moroso' %}badge-defaulter{% endif %}">
+                    <i class="fas fa-{% if paciente.estado == 'activo' %}check-circle{% elif paciente.estado == 'inactivo' %}user-slash{% elif paciente.estado == 'tratamiento' %}procedures{% else %}exclamation-circle{% endif %} me-1"></i>
+                    {{ paciente.get_estado_display }}
+                </span>
+                
+                <div class="btn-group">
+                    {% if seccion == 'anamnesis' %}
+                        <a href="{% url 'historias_clinicas:historial_anamnesis' paciente.id %}" class="btn btn-primary btn-sm rounded-pill">
+                            <i class="fas fa-clipboard-list me-1"></i> Ver historial
+                        </a>
+                    {% elif seccion == 'examen_clinico' %}
+                        <a href="{% url 'historias_clinicas:historial_examen_clinico' paciente.id %}" class="btn btn-primary btn-sm rounded-pill">
+                            <i class="fas fa-stethoscope me-1"></i> Ver historial
+                        </a>
+                    {% elif seccion == 'odontograma' %}
+                        <a href="{% url 'historias_clinicas:historial_odontograma' paciente.id %}" class="btn btn-primary btn-sm rounded-pill">
+                            <i class="fas fa-tooth me-1"></i> Ver historial
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            No hay pacientes registrados en el sistema. <a href="{% url 'pacientes:nuevo_paciente' %}">Registre un nuevo paciente</a>.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Mensaje cuando no hay resultados de búsqueda -->
+<div id="noResults" class="text-center py-5 mt-3" style="display: none;">
+    <div class="mb-3">
+        <i class="fas fa-search fa-3x text-muted"></i>
+    </div>
+    <h4>No se encontraron pacientes</h4>
+    <p class="text-muted">Prueba con otros términos de búsqueda o cambia los filtros aplicados</p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchPacientes');
+    const filterButtons = document.querySelectorAll('.filter-toggle-btn');
+    const patientItems = document.querySelectorAll('.patient-item');
+    const searchResults = document.getElementById('searchResults');
+    const resultCount = document.getElementById('resultCount');
+    const noResults = document.getElementById('noResults');
+    
+    // Contar pacientes por estado e inicializar contadores
+    let counts = {
+        'activo': 0,
+        'inactivo': 0,
+        'tratamiento': 0,
+        'moroso': 0
+    };
+    
+    patientItems.forEach(item => {
+        const estado = item.dataset.estado;
+        if (counts[estado] !== undefined) {
+            counts[estado]++;
+        }
+    });
+    
+    // Actualizar contadores en la UI
+    document.querySelector('.patient-counter-active').textContent = counts['activo'];
+    document.querySelector('.patient-counter-inactive').textContent = counts['inactivo'];
+    document.querySelector('.patient-counter-treatment').textContent = counts['tratamiento'];
+    
+    // Función para filtrar los pacientes
+    function filterPatients() {
+        const searchText = searchInput.value.toLowerCase();
+        const activeFilter = document.querySelector('.filter-toggle-btn.active').dataset.filter;
+        
+        let visibleCount = 0;
+        
+        patientItems.forEach(item => {
+            const patientName = item.querySelector('.patient-name').innerText.toLowerCase();
+            const patientInfo = Array.from(item.querySelectorAll('.patient-info')).map(el => el.innerText.toLowerCase()).join(' ');
+            const estado = item.dataset.estado;
+            
+            const matchesSearch = patientName.includes(searchText) || patientInfo.includes(searchText);
+            const matchesFilter = activeFilter === 'all' || estado === activeFilter;
+            
+            if (matchesSearch && matchesFilter) {
+                item.style.display = '';
+                visibleCount++;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+        
+        // Actualizar contador de resultados y mostrar/ocultar mensajes
+        resultCount.textContent = visibleCount;
+        
+        if (visibleCount > 0) {
+            searchResults.style.display = 'block';
+            noResults.style.display = 'none';
+        } else {
+            searchResults.style.display = 'block';
+            noResults.style.display = 'block';
+        }
+    }
+    
+    // Búsqueda en tiempo real
+    if (searchInput) {
+        searchInput.addEventListener('input', filterPatients);
+        
+        // Efecto visual al hacer focus en el campo de búsqueda
+        searchInput.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.01)';
+        });
+        
+        searchInput.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
+    }
+    
+    // Filtros con animación
+    if (filterButtons.length) {
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Animación de click
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 100);
+                
+                // Desactivar todos los botones
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // Activar el botón actual
+                this.classList.add('active');
+                
+                // Aplicar filtro
+                filterPatients();
+            });
+        });
+    }
+    
+    // Inicializar la interfaz
+    filterPatients();
+    
+    // Efecto de enfoque visual al pasar el mouse sobre las tarjetas
+    const patientCards = document.querySelectorAll('.patient-card');
+    patientCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.boxShadow = '0 8px 25px rgba(0, 123, 255, 0.1)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.boxShadow = '0 3px 10px rgba(0,0,0,0.08)';
+        });
+    });
+});
+</script>
+{% endblock %}

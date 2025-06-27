@@ -41,6 +41,9 @@ urlpatterns = [
     # Módulo de Pacientes
     path('pacientes/', include('apps.pacientes.urls', namespace='pacientes')),
     
+    # Módulo de Historias Clínicas
+    path('historias-clinicas/', include('apps.historias_clinicas.urls', namespace='historias_clinicas')),
+
     # Contraseñas
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
     path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),

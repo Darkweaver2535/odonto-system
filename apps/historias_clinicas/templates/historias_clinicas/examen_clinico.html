@@ -1,0 +1,854 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{% if es_nuevo %}Nuevo Examen Clínico{% else %}Editar Examen Clínico{% endif %} | {{ paciente.get_nombre_completo }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .history-header {
+        background-color: white;
+        border-radius: 18px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .history-section {
+        background: white;
+        border-radius: 18px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+    
+    .section-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e9ecef;
+        background-color: rgba(26, 145, 209, 0.05);
+    }
+    
+    .section-body {
+        padding: 1.5rem;
+    }
+    
+    .patient-info {
+        display: flex;
+        align-items: center;
+    }
+    
+    .patient-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-right: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: white;
+        background-color: var(--primary);
+    }
+    
+    .patient-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .patient-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 0.25rem;
+        line-height: 1.2;
+    }
+    
+    .patient-details {
+        color: var(--gray-500);
+        font-size: 0.95rem;
+    }
+    
+    .badge-status {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .badge-active {
+        background-color: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+    }
+    
+    .history-tabs {
+        margin-bottom: 1.5rem;
+    }
+    
+    .history-tabs .nav-link {
+        border-radius: 50px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        color: var(--gray-800);
+    }
+    
+    .history-tabs .nav-link.active {
+        background-color: var(--primary);
+        color: white;
+        box-shadow: 0 4px 8px rgba(26, 145, 209, 0.2);
+    }
+    
+    .form-label.required-field::after {
+        content: "*";
+        color: var(--danger);
+        margin-left: 4px;
+    }
+    
+    .action-bar {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Specific styles for clinical exam */
+    .health-indicator {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 5px;
+    }
+    
+    .health-normal {
+        background-color: #28a745;
+    }
+    
+    .health-warning {
+        background-color: #ffc107;
+    }
+    
+    .health-patologico {
+        background-color: #dc3545;
+    }
+    
+    .health-not-applicable {
+        background-color: #6c757d;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin-right: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .legends {
+        display: flex;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+    
+    .clinic-table th {
+        background-color: rgba(26, 145, 209, 0.1);
+    }
+    
+    /* Vitals reading styles */
+    .vital-reading {
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        text-align: center;
+    }
+
+    .vital-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--primary);
+        line-height: 1;
+        margin-bottom: 0.3rem;
+    }
+
+    .vital-label {
+        font-size: 0.85rem;
+        color: var(--gray-600);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .vital-unit {
+        font-size: 0.9rem;
+        color: var(--gray-500);
+    }
+    
+    /* Photo upload area */
+    .photo-upload-area {
+        border: 2px dashed var(--gray-300);
+        border-radius: 8px;
+        padding: 2rem 1rem;
+        text-align: center;
+        transition: all 0.3s;
+        cursor: pointer;
+        background-color: #f8f9fa;
+    }
+    
+    .photo-upload-area:hover {
+        border-color: var(--primary);
+        background-color: rgba(26, 145, 209, 0.05);
+    }
+    
+    .upload-icon {
+        font-size: 2rem;
+        color: var(--gray-400);
+        margin-bottom: 1rem;
+    }
+    
+    .photo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+    
+    .photo-thumbnail {
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+        padding-top: 100%; /* 1:1 Aspect Ratio */
+    }
+    
+    .photo-thumbnail img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .photo-remove {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background-color: rgba(255, 255, 255, 0.8);
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 14px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="mb-2">{% if es_nuevo %}Nuevo Examen Clínico{% else %}Editar Examen Clínico{% endif %}</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'historias_clinicas:lista_pacientes_examen_clinico' %}">Examen Clínico</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'historias_clinicas:historial_examen_clinico' paciente.id %}">{{ paciente.get_nombre_completo }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% if es_nuevo %}Nuevo{% else %}Editar{% endif %}</li>
+            </ol>
+        </nav>
+    </div>
+    
+    <div class="d-flex">
+        <a href="{% url 'historias_clinicas:historial_examen_clinico' paciente.id %}" class="btn btn-outline-primary rounded-pill me-2">
+            <i class="fas fa-arrow-left me-2"></i>Regresar
+        </a>
+    </div>
+</div>
+
+{% if messages %}
+<div class="row mb-3">
+    <div class="col-12">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Información del paciente -->
+<div class="history-header">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="patient-info">
+                <div class="patient-avatar">
+                    {% if paciente.foto %}
+                        <img src="{{ paciente.foto.url }}" alt="{{ paciente.get_nombre_completo }}">
+                    {% else %}
+                        {{ paciente.get_iniciales }}
+                    {% endif %}
+                </div>
+                <div>
+                    <h2 class="patient-name">{{ paciente.get_nombre_completo }}</h2>
+                    <div class="patient-details mb-2">
+                        <span class="me-3"><i class="far fa-id-card me-1"></i> CI: {{ paciente.ci }}</span>
+                        <span class="me-3"><i class="fas fa-birthday-cake me-1"></i> {{ paciente.get_edad }} años ({{ paciente.fecha_nacimiento|date:"d/m/Y" }})</span>
+                        <span><i class="fas fa-{% if paciente.genero == 'masculino' %}mars{% elif paciente.genero == 'femenino' %}venus{% else %}genderless{% endif %} me-1"></i> {{ paciente.get_genero_display }}</span>
+                    </div>
+                    <div>
+                        <span class="badge-status 
+                            {% if paciente.estado == 'activo' %}badge-active
+                            {% elif paciente.estado == 'inactivo' %}badge-inactive
+                            {% elif paciente.estado == 'tratamiento' %}badge-treatment
+                            {% elif paciente.estado == 'moroso' %}badge-defaulter{% endif %}">
+                            <i class="fas fa-{% if paciente.estado == 'activo' %}check-circle{% elif paciente.estado == 'inactivo' %}user-slash{% elif paciente.estado == 'tratamiento' %}procedures{% else %}exclamation-circle{% endif %} me-1"></i>
+                            {{ paciente.get_estado_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mt-3 mt-md-0">
+            <div class="card h-100 border-0 bg-light">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Fecha actual:</span>
+                        <span class="fw-medium" id="current-date"></span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Última visita:</span>
+                        <span class="fw-medium">{{ paciente.ultima_visita|date:"d/m/Y"|default:"Sin visitas registradas" }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Teléfono:</span>
+                        <span class="fw-medium">{{ paciente.telefono }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Navegación entre secciones de la historia clínica -->
+<ul class="nav nav-pills history-tabs" id="historyTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <a href="{% url 'historias_clinicas:nueva_anamnesis' paciente.id %}" class="nav-link">
+            <i class="fas fa-clipboard-list me-1"></i> Anamnesis
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="exam-tab" data-bs-toggle="pill" data-bs-target="#exam" type="button" role="tab" aria-controls="exam" aria-selected="true">
+            <i class="fas fa-stethoscope me-1"></i> Examen Clínico
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a href="{% url 'historias_clinicas:nuevo_odontograma' paciente.id %}" class="nav-link">
+            <i class="fas fa-tooth me-1"></i> Odontograma
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a href="#" class="nav-link disabled">
+            <i class="fas fa-x-ray me-1"></i> Exámenes
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a href="#" class="nav-link disabled">
+            <i class="fas fa-clipboard-check me-1"></i> Tratamientos
+        </a>
+    </li>
+</ul>
+
+<form method="post" class="exam-form" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- Información del Examen -->
+    <div class="history-section">
+        <div class="section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-info-circle me-2 text-primary"></i>Información del Examen
+            </h5>
+        </div>
+        <div class="section-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.fecha.id_for_label }}" class="form-label required-field">Fecha</label>
+                    {% render_field form.fecha class="form-control" %}
+                    {% if form.fecha.errors %}
+                    <div class="invalid-feedback d-block">{{ form.fecha.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.tipo.id_for_label }}" class="form-label required-field">Tipo de Examen</label>
+                    {% render_field form.tipo class="form-select" %}
+                    {% if form.tipo.errors %}
+                    <div class="invalid-feedback d-block">{{ form.tipo.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Signos Vitales -->
+    <div class="history-section">
+        <div class="section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-heartbeat me-2 text-primary"></i>Signos Vitales
+            </h5>
+        </div>
+        <div class="section-body">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="vital-reading">
+                        <label for="{{ form.presion_arterial.id_for_label }}" class="vital-label">Presión Arterial</label>
+                        {% render_field form.presion_arterial class="form-control text-center vital-value" placeholder="120/80" %}
+                        <span class="vital-unit">mmHg</span>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="vital-reading">
+                        <label for="{{ form.pulso.id_for_label }}" class="vital-label">Pulso</label>
+                        {% render_field form.pulso class="form-control text-center vital-value" placeholder="75" %}
+                        <span class="vital-unit">lpm</span>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="vital-reading">
+                        <label for="{{ form.temperatura.id_for_label }}" class="vital-label">Temperatura</label>
+                        {% render_field form.temperatura class="form-control text-center vital-value" placeholder="36.5" step="0.1" %}
+                        <span class="vital-unit">°C</span>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="vital-reading">
+                        <label for="{{ form.frecuencia_respiratoria.id_for_label }}" class="vital-label">Frec. Respiratoria</label>
+                        {% render_field form.frecuencia_respiratoria class="form-control text-center vital-value" placeholder="16" %}
+                        <span class="vital-unit">rpm</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Leyenda para estado de salud -->
+    <div class="history-section">
+        <div class="section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-info-circle me-2 text-primary"></i>Leyenda Estado de Salud
+            </h5>
+        </div>
+        <div class="section-body">
+            <div class="legends">
+                <div class="legend-item">
+                    <span class="health-indicator health-normal"></span>
+                    <span>Normal</span>
+                </div>
+                <div class="legend-item">
+                    <span class="health-indicator health-warning"></span>
+                    <span>Requiere atención</span>
+                </div>
+                <div class="legend-item">
+                    <span class="health-indicator health-patologico"></span>
+                    <span>Patológico</span>
+                </div>
+                <div class="legend-item">
+                    <span class="health-indicator health-not-applicable"></span>
+                    <span>No aplica</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Examen Extraoral -->
+    <div class="history-section">
+        <div class="section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-user me-2 text-primary"></i>Examen Extraoral
+            </h5>
+        </div>
+        <div class="section-body">
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <h6 class="mb-3">ATM (Articulación Temporomandibular)</h6>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="{{ form.atm_ruidos.id_for_label }}" class="form-label">Ruidos</label>
+                            {% render_field form.atm_ruidos class="form-select" %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.atm_dolor.id_for_label }}" class="form-label">Dolor</label>
+                            {% render_field form.atm_dolor class="form-select" %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.atm_movimiento.id_for_label }}" class="form-label">Movimiento</label>
+                            {% render_field form.atm_movimiento class="form-select" %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="{{ form.atm_observaciones.id_for_label }}" class="form-label">Observaciones ATM</label>
+                            {% render_field form.atm_observaciones class="form-control" rows="2" %}
+                        </div>
+                    </div>
+                    
+                    <h6 class="mb-3 mt-4">Cara y Cuello</h6>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="{{ form.ganglios.id_for_label }}" class="form-label">Ganglios</label>
+                            {% render_field form.ganglios class="form-select" %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.cicatrices.id_for_label }}" class="form-label">Cicatrices</label>
+                            {% render_field form.cicatrices class="form-select" %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.asimetrias.id_for_label }}" class="form-label">Asimetrías</label>
+                            {% render_field form.asimetrias class="form-select" %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label for="{{ form.extra_observaciones.id_for_label }}" class="form-label">Observaciones Extraorales</label>
+                            {% render_field form.extra_observaciones class="form-control" rows="2" %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Examen Intraoral -->
+    <div class="history-section">
+        <div class="section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-teeth-open me-2 text-primary"></i>Examen Intraoral
+            </h5>
+        </div>
+        <div class="section-body">
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <h6 class="mb-3">Tejidos Blandos</h6>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="{{ form.labios.id_for_label }}" class="form-label">Labios</label>
+                            {% render_field form.labios class="form-select" %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.mejillas.id_for_label }}" class="form-label">Mejillas</label>
+                            {% render_field form.mejillas class="form-select" %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.paladar.id_for_label }}" class="form-label">Paladar</label>
+                            {% render_field form.paladar class="form-select" %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="{{ form.lengua.id_for_label }}" class="form-label">Lengua</label>
+                            {% render_field form.lengua class="form-select" %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.piso_boca.id_for_label }}" class="form-label">Piso de boca</label>
+                            {% render_field form.piso_boca class="form-select" %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.encias.id_for_label }}" class="form-label">Encías</label>
+                            {% render_field form.encias class="form-select" %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="{{ form.tejidos_observaciones.id_for_label }}" class="form-label">Observaciones Tejidos Blandos</label>
+                            {% render_field form.tejidos_observaciones class="form-control" rows="2" %}
+                        </div>
+                    </div>
+
+                    <h6 class="mb-3 mt-4">Periodonto</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label for="{{ form.sangrado_encias.id_for_label }}" class="form-label">Sangrado de encías</label>
+                            {% render_field form.sangrado_encias class="form-select" %}
+                        </div>
+                        <div class="col-md-3">
+                            <label for="{{ form.retraccion_gingival.id_for_label }}" class="form-label">Retracción gingival</label>
+                            {% render_field form.retraccion_gingival class="form-select" %}
+                        </div>
+                        <div class="col-md-3">
+                            <label for="{{ form.calculo_dental.id_for_label }}" class="form-label">Cálculo dental</label>
+                            {% render_field form.calculo_dental class="form-select" %}
+                        </div>
+                        <div class="col-md-3">
+                            <label for="{{ form.movilidad_dental.id_for_label }}" class="form-label">Movilidad dental</label>
+                            {% render_field form.movilidad_dental class="form-select" %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="{{ form.periodonto_observaciones.id_for_label }}" class="form-label">Observaciones Periodonto</label>
+                            {% render_field form.periodonto_observaciones class="form-control" rows="2" %}
+                        </div>
+                    </div>
+                    
+                    <h6 class="mb-3 mt-4">Oclusión y Dentición</h6>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.tipo_mordida.id_for_label }}" class="form-label">Tipo de mordida</label>
+                            {% render_field form.tipo_mordida class="form-control" placeholder="Ej: Clase I, Clase II, etc." %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.malposiciones.id_for_label }}" class="form-label">Malposiciones</label>
+                            {% render_field form.malposiciones class="form-select" %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="{{ form.dientes_ausentes.id_for_label }}" class="form-label">Dientes ausentes</label>
+                            {% render_field form.dientes_ausentes class="form-control" placeholder="Ej: 16, 26, 36, 46" %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.higiene_oral.id_for_label }}" class="form-label">Higiene oral</label>
+                            {% render_field form.higiene_oral class="form-select" %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.caries_dental.id_for_label }}" class="form-label">Caries dental</label>
+                            {% render_field form.caries_dental class="form-select" %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="{{ form.oclusion_observaciones.id_for_label }}" class="form-label">Observaciones Oclusión</label>
+                            {% render_field form.oclusion_observaciones class="form-control" rows="2" %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Registro Fotográfico -->
+    <div class="history-section">
+        <div class="section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-camera me-2 text-primary"></i>Registro Fotográfico
+            </h5>
+        </div>
+        <div class="section-body">
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="photo-upload-area" id="photo-upload-area">
+                        <input type="file" name="fotos_clinicas" id="foto-upload" multiple accept="image/*" class="d-none" />
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <h5>Subir fotografías</h5>
+                        <p class="text-muted mb-0">Haga clic aquí o arrastre las imágenes para subirlas</p>
+                    </div>
+                    
+                    <div class="photo-grid" id="photo-preview">
+                        <!-- Las fotos subidas se mostrarán aquí -->
+                    </div>
+                    
+                    <div class="photo-grid" id="existing-photos">
+                        {% if fotos %}
+                            {% for foto in fotos %}
+                                <div class="photo-thumbnail">
+                                    <img src="{{ foto.imagen.url }}" alt="Foto clínica">
+                                    <div class="photo-remove" data-foto-id="{{ foto.id }}">
+                                        <i class="fas fa-times"></i>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Diagnóstico Clínico -->
+    <div class="history-section">
+        <div class="section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-file-medical-alt me-2 text-primary"></i>Diagnóstico Clínico
+            </h5>
+        </div>
+        <div class="section-body">
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label for="{{ form.diagnostico_principal.id_for_label }}" class="form-label required-field">Diagnóstico Principal</label>
+                    {% render_field form.diagnostico_principal class="form-control" rows="3" %}
+                    {% if form.diagnostico_principal.errors %}
+                    <div class="invalid-feedback d-block">{{ form.diagnostico_principal.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label for="{{ form.diagnosticos_secundarios.id_for_label }}" class="form-label">Diagnósticos Secundarios</label>
+                    {% render_field form.diagnosticos_secundarios class="form-control" rows="2" %}
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-12">
+                    <label for="{{ form.plan_tratamiento.id_for_label }}" class="form-label">Plan de Tratamiento</label>
+                    {% render_field form.plan_tratamiento class="form-control" rows="3" %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Observaciones -->
+    <div class="history-section">
+        <div class="section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-comment-medical me-2 text-primary"></i>Observaciones Generales
+            </h5>
+        </div>
+        <div class="section-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <label for="{{ form.observaciones.id_for_label }}" class="form-label">Observaciones</label>
+                    {% render_field form.observaciones class="form-control" rows="3" %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Botones de Acción -->
+    <div class="row mb-5">
+        <div class="col-12 text-end">
+            <a href="{% url 'historias_clinicas:historial_examen_clinico' paciente.id %}" class="btn btn-light btn-lg px-4 rounded-pill me-2">
+                Cancelar
+            </a>
+            <button type="submit" name="guardar_borrador" class="btn btn-secondary btn-lg px-4 rounded-pill me-2">
+                <i class="fas fa-save me-2"></i>Guardar borrador
+            </button>
+            <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill">
+                <i class="fas fa-check-circle me-2"></i>Guardar y continuar
+            </button>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Establecer la fecha actual
+        const today = new Date();
+        const formattedDate = today.toLocaleDateString('es-ES', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric' 
+        });
+        document.getElementById('current-date').textContent = formattedDate;
+        
+        // Manejo de la carga de fotografías
+        const uploadArea = document.getElementById('photo-upload-area');
+        const fileInput = document.getElementById('foto-upload');
+        const photoPreview = document.getElementById('photo-preview');
+        
+        if (uploadArea && fileInput) {
+            uploadArea.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            // Drag and Drop
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                uploadArea.classList.add('border-primary');
+                uploadArea.style.backgroundColor = 'rgba(26, 145, 209, 0.05)';
+            }
+            
+            function unhighlight() {
+                uploadArea.classList.remove('border-primary');
+                uploadArea.style.backgroundColor = '';
+            }
+            
+            uploadArea.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            }
+            
+            fileInput.addEventListener('change', function() {
+                handleFiles(this.files);
+            });
+            
+            function handleFiles(files) {
+                if (!files || files.length === 0) return;
+                
+                Array.from(files).forEach(file => {
+                    if (file.type.match('image.*')) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            // Crear thumbnail para la imagen
+                            const thumbnailDiv = document.createElement('div');
+                            thumbnailDiv.className = 'photo-thumbnail';
+                            
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.alt = 'Foto clínica';
+                            
+                            const removeBtn = document.createElement('div');
+                            removeBtn.className = 'photo-remove';
+                            removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                            removeBtn.addEventListener('click', function(event) {
+                                event.stopPropagation();
+                                thumbnailDiv.remove();
+                            });
+                            
+                            thumbnailDiv.appendChild(img);
+                            thumbnailDiv.appendChild(removeBtn);
+                            photoPreview.appendChild(thumbnailDiv);
+                            
+                            // Crear un input hidden para enviar la imagen al servidor
+                            const hiddenInput = document.createElement('input');
+                            hiddenInput.type = 'hidden';
+                            hiddenInput.name = 'foto_preview';
+                            hiddenInput.value = e.target.result;
+                            thumbnailDiv.appendChild(hiddenInput);
+                        };
+                        
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        }
+    });
+</script>
+{% endblock %}

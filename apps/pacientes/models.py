@@ -43,6 +43,16 @@ class Paciente(models.Model):
         ('desconocido', 'Desconocido'),
     ]
     
+    COMO_LOCALIZO_CHOICES = [
+        ('referencia', 'Me envió alguien'),
+        ('redes_sociales', 'Redes Sociales'),
+        ('publicidad', 'Publicidad/Anuncios'),
+        ('internet', 'Búsqueda en Internet'),
+        ('pasaba_por_aqui', 'Pasaba por aquí'),
+        ('recomendacion', 'Recomendación profesional'),
+        ('otro', 'Otro'),
+    ]
+    
     # Datos personales
     nombres = models.CharField(max_length=100)
     apellidos = models.CharField(max_length=100)
@@ -78,6 +88,23 @@ class Paciente(models.Model):
     
     # Observaciones
     observaciones = models.TextField(blank=True, null=True)
+    
+    # Nuevos campos
+    ocupacion = models.CharField(max_length=100, blank=True, null=True, verbose_name="Ocupación")
+    vacuna_covid = models.BooleanField(default=False, verbose_name="Vacuna contra COVID-19")
+    como_localizo = models.CharField(
+        max_length=50, 
+        choices=COMO_LOCALIZO_CHOICES, 
+        blank=True, 
+        null=True, 
+        verbose_name="¿Cómo nos localizó?"
+    )
+    como_localizo_detalle = models.CharField(
+        max_length=200, 
+        blank=True, 
+        null=True, 
+        verbose_name="Detalles adicionales"
+    )
     
     # Metadatos
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='activo')

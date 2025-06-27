@@ -1,0 +1,877 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Detalle de Odontograma | {{ paciente.get_nombre_completo }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Incluir los mismos estilos del odontograma.html */
+    .history-header {
+        background-color: white;
+        border-radius: 18px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .history-section {
+        background: white;
+        border-radius: 18px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2.5rem;  /* Increased from 1.5rem */
+        overflow: hidden;
+    }
+    
+    .section-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e9ecef;
+        background-color: rgba(26, 145, 209, 0.05);
+    }
+    
+    .section-body {
+        padding: 2rem;  /* Increased from 1.5rem */
+    }
+    
+    .patient-info {
+        display: flex;
+        align-items: center;
+    }
+    
+    .patient-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-right: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: white;
+        background-color: var(--primary);
+    }
+    
+    .patient-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .patient-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 0.25rem;
+        line-height: 1.2;
+    }
+    
+    .patient-details {
+        color: var(--gray-500);
+        font-size: 0.95rem;
+    }
+    
+    .badge-status {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .badge-active {
+        background-color: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+    }
+    
+    .history-tabs {
+        margin-bottom: 1.5rem;
+    }
+    
+    .history-tabs .nav-link {
+        border-radius: 50px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        color: var(--gray-800);
+    }
+    
+    .history-tabs .nav-link.active {
+        background-color: var(--primary);
+        color: white;
+        box-shadow: 0 4px 8px rgba(26, 145, 209, 0.2);
+    }
+    
+    /* =================================
+       ESTILOS MEJORADOS DEL ODONTOGRAMA
+       ================================= */
+    
+    .odontogram-container {
+        position: relative;
+        max-width: 1100px;
+        margin: 0 auto;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 20px;
+        padding: 3rem 2rem;
+        box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;  /* Added margin bottom */
+    }
+    
+    .dental-arch {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 6rem !important; /* Increased from 3-4rem */
+        position: relative;
+        padding-top: 3rem;
+    }
+    
+    .dental-arch::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        height: 120px;
+        border: 3px solid rgba(26, 145, 209, 0.1);
+        border-radius: 50%;
+        z-index: 0;
+    }
+    
+    .upper-arch::before {
+        border-bottom: none;
+        border-radius: 300px 300px 0 0;
+    }
+    
+    .lower-arch::before {
+        border-top: none;
+        border-radius: 0 0 300px 300px;
+    }
+    
+    .arch-quadrant {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .arch-label {
+        position: absolute;
+        top: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--primary);
+        background: white;
+        padding: 5px 15px;
+        border-radius: 15px;
+        border: 2px solid var(--primary);
+        box-shadow: 0 2px 8px rgba(26, 145, 209, 0.15);
+    }
+    
+    .tooth {
+        position: relative;
+        width: 55px;
+        height: 80px;
+        margin: 0 4px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 2;
+    }
+    
+    .tooth-crown {
+        position: relative;
+        width: 48px;
+        height: 48px;
+        margin: 0 auto;
+        border: 3px solid #2c3e50;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(145deg, #ffffff, #f8f9fa);
+        box-shadow: 
+            0 4px 8px rgba(0, 0, 0, 0.1),
+            inset 0 1px 3px rgba(255, 255, 255, 0.8);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .upper-tooth .tooth-crown {
+        border-radius: 12px 12px 20px 20px;
+    }
+    
+    .lower-tooth .tooth-crown {
+        border-radius: 20px 20px 12px 12px;
+    }
+    
+    .tooth-crown::before {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        right: 2px;
+        height: 15px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), transparent);
+        border-radius: inherit;
+        pointer-events: none;
+    }
+    
+    .tooth-root {
+        width: 4px;
+        height: 20px;
+        background: linear-gradient(180deg, #2c3e50, #34495e);
+        margin: 0 auto;
+        border-radius: 2px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    .upper-tooth .tooth-root {
+        margin-bottom: 8px;
+    }
+    
+    .lower-tooth .tooth-root {
+        margin-top: 8px;
+    }
+    
+    .tooth-number {
+        font-size: 0.75rem;
+        text-align: center;
+        font-weight: 700;
+        position: absolute;
+        width: 100%;
+        color: #2c3e50;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 10px;
+        padding: 2px 0;
+        border: 1px solid rgba(26, 145, 209, 0.2);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        z-index: 3;
+    }
+    
+    .upper-tooth .tooth-number {
+        top: -40px !important;
+    }
+    
+    .lower-tooth .tooth-number {
+        bottom: -40px !important;
+    }
+    
+    .tooth-surfaces {
+        position: absolute;
+        width: 48px;
+        height: 48px;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1;
+    }
+    
+    .tooth-surface {
+        position: absolute;
+        background-color: transparent;
+        border-radius: 2px;
+        opacity: 0.8;
+    }
+    
+    .surface-occlusal {
+        width: 65%;
+        height: 65%;
+        top: 17.5%;
+        left: 17.5%;
+        border-radius: 6px;
+    }
+    
+    .surface-buccal {
+        width: 65%;
+        height: 17.5%;
+        top: 0;
+        left: 17.5%;
+        border-radius: 4px 4px 0 0;
+    }
+    
+    .surface-lingual {
+        width: 65%;
+        height: 17.5%;
+        bottom: 0;
+        left: 17.5%;
+        border-radius: 0 0 4px 4px;
+    }
+    
+    .surface-mesial {
+        width: 17.5%;
+        height: 65%;
+        top: 17.5%;
+        left: 0;
+        border-radius: 4px 0 0 4px;
+    }
+    
+    .surface-distal {
+        width: 17.5%;
+        height: 65%;
+        top: 17.5%;
+        right: 0;
+        border-radius: 0 4px 4px 0;
+    }
+    
+    /* Estados dentales mejorados */
+    .caries .tooth-crown {
+        background: linear-gradient(145deg, #dc3545, #c82333);
+        border-color: #b21f2d;
+        box-shadow: 
+            0 4px 12px rgba(220, 53, 69, 0.4),
+            inset 0 1px 3px rgba(255, 255, 255, 0.3);
+    }
+    
+    .restoration .tooth-crown {
+        background: linear-gradient(145deg, #28a745, #218838);
+        border-color: #1e7e34;
+        box-shadow: 
+            0 4px 12px rgba(40, 167, 69, 0.4),
+            inset 0 1px 3px rgba(255, 255, 255, 0.3);
+    }
+    
+    .extraction .tooth-crown {
+        background: linear-gradient(145deg, #6c757d, #5a6268);
+        border: 3px dashed #495057;
+        opacity: 0.6;
+        box-shadow: none;
+    }
+    
+    /* More professional styling for crown */
+    .crown .tooth-crown {
+        background: linear-gradient(145deg, #17a2b8, #138496);
+        border-color: #117a8b;
+        box-shadow: 
+            0 4px 12px rgba(23, 162, 184, 0.4),
+            inset 0 1px 3px rgba(255, 255, 255, 0.3);
+    }
+    
+    /* More professional styling for root canal */
+    .root-canal .tooth-crown {
+        background: linear-gradient(145deg, #ffc107, #e0a800);
+        border-color: #d39e00;
+        position: relative;
+    }
+    
+    /* Add subtle cross pattern for root canal instead of emoji */
+    .root-canal .tooth-crown::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 60%;
+        height: 60%;
+        background: 
+            linear-gradient(90deg, transparent 45%, #d39e00 45%, #d39e00 55%, transparent 55%),
+            linear-gradient(0deg, transparent 45%, #d39e00 45%, #d39e00 55%, transparent 55%);
+        opacity: 0.5;
+    }
+    
+    .implant .tooth-root {
+        width: 8px;
+        background: linear-gradient(180deg, #6f42c1, #5a32a3);
+        box-shadow: 0 2px 8px rgba(111, 66, 193, 0.4);
+    }
+    
+    .implant .tooth-crown {
+        border-color: #6f42c1;
+        background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+    }
+    
+    .bridge .tooth-crown::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: -10px;
+        right: -10px;
+        height: 4px;
+        background: linear-gradient(90deg, #fd7e14, #e8590c);
+        border-radius: 2px;
+        box-shadow: 0 2px 4px rgba(253, 126, 20, 0.3);
+        z-index: -1;
+    }
+    
+    .root-canal .tooth-crown {
+        background: linear-gradient(145deg, #ffc107, #e0a800);
+        border-color: #d39e00;
+        position: relative;
+    }
+    
+    .odontogram-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 2rem;  /* Increased from 1rem */
+        padding: 1.25rem;  /* Increased from 1rem */
+        background: rgba(26, 145, 209, 0.05);
+        border-radius: 12px;
+        border: 1px solid rgba(26, 145, 209, 0.1);
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--gray-800);
+    }
+    
+    .legend-color {
+        width: 24px;
+        height: 24px;
+        border: 2px solid #333;
+        margin-right: 8px;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Estilos para todas las leyendas de intervenciones */
+    .legend-caries {
+        background: linear-gradient(145deg, #dc3545, #c82333);
+        border-color: #b21f2d;
+    }
+    
+    .legend-restoration {
+        background: linear-gradient(145deg, #28a745, #218838);
+        border-color: #1e7e34;
+    }
+    
+    .legend-extraction {
+        background: linear-gradient(145deg, #6c757d, #5a6268);
+        border: 2px dashed #495057;
+        opacity: 0.7;
+    }
+    
+    .legend-crown {
+        background: linear-gradient(145deg, #17a2b8, #138496);
+        border-color: #117a8b;
+    }
+    
+    .legend-implant {
+        background: linear-gradient(145deg, #6f42c1, #5a32a3);
+        border-color: #4b276f;
+    }
+    
+    .legend-bridge {
+        background: linear-gradient(145deg, #fd7e14, #e8590c);
+        border-color: #bd4a09;
+    }
+    
+    .legend-root-canal {
+        background: linear-gradient(145deg, #ffc107, #e0a800);
+        border-color: #d39e00;
+    }
+    
+    .legend-sealant {
+        background: linear-gradient(145deg, #20c997, #17a2b8);
+        border-color: #0f8c96;
+    }
+    
+    .legend-veneer {
+        background: linear-gradient(145deg, #17a2b8, #0dcaf0);
+        border-color: #0ab5d8;
+    }
+    
+    .legend-mobility {
+        background: linear-gradient(145deg, #ff9800, #ed6c02);
+        border-color: #d36118;
+    }
+    
+    .legend-fracture {
+        background: linear-gradient(145deg, #dc5512, #c13b00);
+        border-color: #932c00;
+    }
+    
+    /* Estilos para la vista de detalle */
+    .detail-navigation {
+        margin-bottom: 1.5rem;
+    }
+    
+    .detail-metadata {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .detail-doctor {
+        margin-right: 1.5rem;
+    }
+    
+    .detail-date {
+        color: var(--gray-600);
+    }
+    
+    /* Mejoras para el resumen de intervenciones */
+    .tooth-info-pill {
+        border-radius: 30px;
+        padding: 0.3rem 0.7rem;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+        display: inline-block;
+        font-size: 0.85rem;
+        font-weight: 500;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    #teeth-summary h6 {
+        border-bottom: 1px solid #f0f0f0;
+        padding-bottom: 0.5rem;
+        margin-top: 2rem;  /* Increased from 1.5rem */
+        font-weight: 600;
+        color: #333;
+    }
+    
+    #teeth-summary h6:first-child {
+        margin-top: 0;
+    }
+    
+    .intervention-group {
+        margin-bottom: 2rem;  /* Increased from 1.5rem */
+        padding: 1rem;  /* Increased from 0.5rem */
+        border-radius: 8px;
+        background-color: #f8f9fa;
+    }
+    
+    /* Hide treatment labels by default - only show on hover */
+    .treatment-label {
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.75rem;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 3px 8px;
+        border-radius: 4px;
+        white-space: nowrap;
+        z-index: 20;
+        font-weight: bold;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        pointer-events: none;
+        opacity: 0; /* Hidden by default */
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    /* Show treatment label only on hover */
+    .tooth:hover .treatment-label {
+        opacity: 1;
+    }
+    
+    /* Hide all surface labels completely - NEW */
+    .surface-label {
+        display: none !important;
+    }
+    
+    /* Even on hover, keep surface labels hidden - NEW */
+    .tooth-surface:hover .surface-label {
+        display: none !important;
+    }
+    
+    /* Increase space between quadrant labels */
+    .d-flex.justify-content-center.mb-2 {
+        margin-bottom: 3.5rem !important; /* Increased further from 2.5rem to 3.5rem */
+    }
+
+    /* Improve the visibility and spacing of upper quadrant labels */
+    .d-flex.justify-content-center .badge.bg-secondary-subtle {
+        padding: 0.5rem 1.5rem !important;
+        font-size: 1rem !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        position: relative;
+        top: -20px !important; /* Move labels up and away from teeth */
+    }
+    
+    /* Keep the horizontal spacing between quadrant labels */
+    .d-flex.justify-content-center .badge.bg-secondary-subtle:first-child {
+        margin-right: 3rem !important;
+    }
+
+    .d-flex.justify-content-center .badge.bg-secondary-subtle:last-child {
+        margin-left: 3rem !important;
+    }
+    
+    /* Add a separator between the quadrant labels to make the division clearer */
+    .d-flex.justify-content-center {
+        position: relative;
+    }
+
+    .d-flex.justify-content-center:after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 4px;
+        height: 20px;
+        background-color: rgba(26, 145, 209, 0.2);
+        border-radius: 2px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-2">Detalle de Odontograma</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'historias_clinicas:lista_pacientes_odontograma' %}">Odontograma</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'historias_clinicas:historial_odontograma' paciente.id %}">{{ paciente.get_nombre_completo }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Detalle</li>
+            </ol>
+        </nav>
+    </div>
+    
+    <div class="d-flex">
+        <a href="{% url 'historias_clinicas:historial_odontograma' paciente.id %}" class="btn btn-outline-primary rounded-pill me-2">
+            <i class="fas fa-arrow-left me-2"></i>Regresar
+        </a>
+        <a href="{% url 'historias_clinicas:editar_odontograma' paciente.id odontograma.id %}" class="btn btn-primary rounded-pill">
+            <i class="fas fa-edit me-2"></i>Editar
+        </a>
+    </div>
+</div>
+
+<!-- Navegación entre registros -->
+<div class="detail-navigation row mb-4">
+    <div class="col-md-6">
+        {% if anterior %}
+            <a href="{% url 'historias_clinicas:detalle_odontograma' paciente.id anterior.id %}" class="btn btn-sm btn-light">
+                <i class="fas fa-chevron-left me-1"></i> Registro anterior ({{ anterior.fecha|date:"d/m/Y" }})
+            </a>
+        {% endif %}
+    </div>
+    <div class="col-md-6 text-end">
+        {% if siguiente %}
+            <a href="{% url 'historias_clinicas:detalle_odontograma' paciente.id siguiente.id %}" class="btn btn-sm btn-light">
+                Registro siguiente ({{ siguiente.fecha|date:"d/m/Y" }}) <i class="fas fa-chevron-right ms-1"></i>
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Información del paciente -->
+<div class="history-header mb-4">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="patient-info">
+                <div class="patient-avatar">
+                    {% if paciente.foto %}
+                        <img src="{{ paciente.foto.url }}" alt="{{ paciente.get_nombre_completo }}">
+                    {% else %}
+                        {{ paciente.get_iniciales }}
+                    {% endif %}
+                </div>
+                <div>
+                    <h2 class="patient-name">{{ paciente.get_nombre_completo }}</h2>
+                    <div class="patient-details mb-2">
+                        <span class="me-3"><i class="far fa-id-card me-1"></i> CI: {{ paciente.ci }}</span>
+                        <span class="me-3"><i class="fas fa-birthday-cake me-1"></i> {{ paciente.get_edad }} años ({{ paciente.fecha_nacimiento|date:"d/m/Y" }})</span>
+                        <span><i class="fas fa-{% if paciente.genero == 'masculino' %}mars{% elif paciente.genero == 'femenino' %}venus{% else %}genderless{% endif %} me-1"></i> {{ paciente.get_genero_display }}</span>
+                    </div>
+                    <div>
+                        <span class="badge-status {% if paciente.estado == 'activo' %}badge-active{% endif %}">
+                            <i class="fas fa-check-circle me-1"></i>{{ paciente.get_estado_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="detail-metadata text-md-end">
+                <div class="detail-doctor me-4">
+                    <small class="text-muted d-block">Doctor/a</small>
+                    <span class="fw-medium">{{ odontograma.doctor.get_full_name }}</span>
+                </div>
+                <div class="detail-date">
+                    <small class="text-muted d-block">Fecha</small>
+                    <span class="fw-medium">{{ odontograma.fecha|date:"d/m/Y H:i" }}</span>
+                </div>
+            </div>
+            <div class="mb-2 text-md-end">
+                <span class="badge bg-primary">{{ odontograma.get_tipo_display }}</span>
+                <span class="badge bg-secondary">{{ odontograma.get_denticion_display }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Información del Odontograma -->
+<div class="history-section">
+    <div class="section-header">
+        <h5 class="mb-0">
+            <i class="fas fa-teeth me-2 text-primary"></i>Odontograma
+        </h5>
+    </div>
+    <div class="section-body">
+        <!-- Leyenda -->
+        <div class="odontogram-legend mb-4">
+            <div class="legend-item">
+                <span class="legend-color legend-caries"></span>
+                <span>Caries</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color legend-restoration"></span>
+                <span>Restauración</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color legend-extraction"></span>
+                <span>Extracción</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color legend-crown"></span>
+                <span>Corona</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color legend-implant"></span>
+                <span>Implante</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color legend-bridge"></span>
+                <span>Puente</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color legend-root-canal"></span>
+                <span>Endodoncia</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color legend-sealant"></span>
+                <span>Sellante</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color legend-veneer"></span>
+                <span>Carilla</span>
+            </div>
+        </div>
+        
+        <!-- Odontograma -->
+        <div class="odontogram-container">
+            <!-- Arcada Superior -->
+            <div class="dental-arch upper-arch">
+                <div class="arch-label">ARCADA SUPERIOR</div>
+                
+                <div class="d-flex justify-content-center mb-2">
+                    <small class="badge bg-secondary-subtle text-secondary me-3">Cuadrante 1</small>
+                    <small class="badge bg-secondary-subtle text-secondary">Cuadrante 2</small>
+                </div>
+                
+                <div class="d-flex">
+                    <div class="arch-quadrant me-3" id="upper-right"></div>
+                    <div class="d-flex align-items-center mx-3">
+                        <div style="width: 2px; height: 60px; background: rgba(26, 145, 209, 0.3); border-radius: 1px;"></div>
+                    </div>
+                    <div class="arch-quadrant ms-3" id="upper-left"></div>
+                </div>
+            </div>
+            
+            <!-- Separador entre arcadas -->
+            <div class="d-flex justify-content-center my-4">
+                <div class="badge bg-light text-dark px-4 py-2 border">
+                    <i class="fas fa-arrows-alt-v me-2"></i>LÍNEA MEDIA
+                </div>
+            </div>
+            
+            <!-- Arcada Inferior -->
+            <div class="dental-arch lower-arch">
+                <div class="arch-label">ARCADA INFERIOR</div>
+                
+                <div class="d-flex">
+                    <div class="arch-quadrant me-3" id="lower-left"></div>
+                    <div class="d-flex align-items-center mx-3">
+                        <div style="width: 2px; height: 60px; background: rgba(26, 145, 209, 0.3); border-radius: 1px;"></div>
+                    </div>
+                    <div class="arch-quadrant ms-3" id="lower-right"></div>
+                </div>
+                
+                <div class="d-flex justify-content-center mt-2">
+                    <small class="badge bg-secondary-subtle text-secondary me-3">Cuadrante 3</small>
+                    <small class="badge bg-secondary-subtle text-secondary">Cuadrante 4</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notas de Tratamiento - added more vertical spacing -->
+{% if odontograma.notas_tratamiento %}
+<div class="history-section treatment-notes">
+    <div class="section-header">
+        <h5 class="mb-0">
+            <i class="fas fa-clipboard-list me-2 text-primary"></i>Notas de Tratamiento
+        </h5>
+    </div>
+    <div class="section-body">
+        <div class="row">
+            <div class="col-12">
+                <p>{{ odontograma.notas_tratamiento|linebreaks }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Observaciones - added more vertical spacing -->
+{% if odontograma.observaciones %}
+<div class="history-section">
+    <div class="section-header">
+        <h5 class="mb-0">
+            <i class="fas fa-comment-medical me-2 text-primary"></i>Observaciones Generales
+        </h5>
+    </div>
+    <div class="section-body">
+        <div class="row">
+            <div class="col-12">
+                <p>{{ odontograma.observaciones|linebreaks }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Dientes con intervenciones - added more vertical spacing -->
+<div class="history-section">
+    <div class="section-header">
+        <h5 class="mb-0">
+            <i class="fas fa-list-alt me-2 text-primary"></i>Resumen de Intervenciones
+        </h5>
+    </div>
+    <div class="section-body">
+        <div id="teeth-summary">
+            <!-- Se llenará con JavaScript -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Incluir el script compartido del odontograma -->
+<script src="{% static 'js/odontograma.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Datos del odontograma desde el servidor
+        let teethData = {};
+        {% if datos_dientes %}
+            try {
+                teethData = JSON.parse('{{ datos_dientes|escapejs }}');
+                console.log("Datos cargados:", teethData);
+            } catch (e) {
+                console.error("Error al parsear datos de dientes:", e);
+            }
+        {% endif %}
+        
+        // Inicializar el odontograma en modo solo lectura
+        const odontograma = new Odontograma({
+            teethData: teethData,
+            readOnly: true,
+            dentition: '{{ odontograma.denticion }}'
+        });
+        
+        odontograma.init();
+    });
+</script>
+{% endblock %}

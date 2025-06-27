@@ -1,0 +1,664 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Anamnesis | Historia Clínica{% endblock %}
+
+{% block extra_css %}
+<style>
+    .history-header {
+        background-color: white;
+        border-radius: 18px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .history-section {
+        background: white;
+        border-radius: 18px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+    
+    .section-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e9ecef;
+        background-color: rgba(26, 145, 209, 0.05);
+    }
+    
+    .section-body {
+        padding: 1.5rem;
+    }
+    
+    .patient-info {
+        display: flex;
+        align-items: center;
+    }
+    
+    .patient-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-right: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: white;
+        background-color: var(--primary);
+    }
+    
+    .patient-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .patient-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 0.25rem;
+        line-height: 1.2;
+    }
+    
+    .patient-details {
+        color: var(--gray-500);
+        font-size: 0.95rem;
+    }
+    
+    .badge-status {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .badge-active {
+        background-color: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+    }
+    
+    .badge-inactive {
+        background-color: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+    }
+    
+    .badge-treatment {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #ffc107;
+    }
+    
+    .badge-defaulter {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+    
+    .history-tabs {
+        margin-bottom: 1.5rem;
+    }
+    
+    .history-tabs .nav-link {
+        border-radius: 50px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        color: var(--gray-800);
+    }
+    
+    .history-tabs .nav-link.active {
+        background-color: var(--primary);
+        color: white;
+        box-shadow: 0 4px 8px rgba(26, 145, 209, 0.2);
+    }
+    
+    .form-label.required-field::after {
+        content: "*";
+        color: var(--danger);
+        margin-left: 4px;
+    }
+    
+    .form-check-lg .form-check-input {
+        width: 1.25rem;
+        height: 1.25rem;
+        margin-top: 0.2rem;
+    }
+    
+    .form-check-lg .form-check-label {
+        padding-left: 0.5rem;
+    }
+    
+    .action-bar {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="mb-2">{% if es_nueva %}Nueva Anamnesis{% else %}Editar Anamnesis{% endif %}</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'historias_clinicas:lista_pacientes_anamnesis' %}">Anamnesis</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'historias_clinicas:historial_anamnesis' paciente.id %}">{{ paciente.get_nombre_completo }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% if es_nueva %}Nueva{% else %}Editar{% endif %}</li>
+            </ol>
+        </nav>
+    </div>
+    
+    <div class="d-flex">
+        <a href="{% url 'historias_clinicas:historial_anamnesis' paciente.id %}" class="btn btn-outline-primary rounded-pill me-2">
+            <i class="fas fa-arrow-left me-2"></i>Regresar
+        </a>
+    </div>
+</div>
+
+{% if messages %}
+<div class="row mb-3">
+    <div class="col-12">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Información del paciente -->
+<div class="history-header">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="patient-info">
+                <div class="patient-avatar">
+                    {% if paciente.foto %}
+                        <img src="{{ paciente.foto.url }}" alt="{{ paciente.get_nombre_completo }}">
+                    {% else %}
+                        {{ paciente.get_iniciales }}
+                    {% endif %}
+                </div>
+                <div>
+                    <h2 class="patient-name">{{ paciente.get_nombre_completo }}</h2>
+                    <div class="patient-details mb-2">
+                        <span class="me-3"><i class="far fa-id-card me-1"></i> CI: {{ paciente.ci }}</span>
+                        <span class="me-3"><i class="fas fa-birthday-cake me-1"></i> {{ paciente.get_edad }} años ({{ paciente.fecha_nacimiento|date:"d/m/Y" }})</span>
+                        <span><i class="fas fa-{% if paciente.genero == 'masculino' %}mars{% elif paciente.genero == 'femenino' %}venus{% else %}genderless{% endif %} me-1"></i> {{ paciente.get_genero_display }}</span>
+                    </div>
+                    <div>
+                        <span class="badge-status 
+                            {% if paciente.estado == 'activo' %}badge-active
+                            {% elif paciente.estado == 'inactivo' %}badge-inactive
+                            {% elif paciente.estado == 'tratamiento' %}badge-treatment
+                            {% elif paciente.estado == 'moroso' %}badge-defaulter{% endif %}">
+                            <i class="fas fa-{% if paciente.estado == 'activo' %}check-circle{% elif paciente.estado == 'inactivo' %}user-slash{% elif paciente.estado == 'tratamiento' %}procedures{% else %}exclamation-circle{% endif %} me-1"></i>
+                            {{ paciente.get_estado_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 bg-light">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Fecha actual:</span>
+                        <span class="fw-medium" id="current-date"></span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Última visita:</span>
+                        <span class="fw-medium">{{ paciente.ultima_visita|date:"d/m/Y"|default:"Sin visitas" }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Teléfono:</span>
+                        <span class="fw-medium">{{ paciente.telefono }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Navegación entre secciones de la historia clínica -->
+<ul class="nav nav-pills history-tabs" id="historyTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="anamnesis-tab" data-bs-toggle="pill" data-bs-target="#anamnesis" type="button" role="tab" aria-controls="anamnesis" aria-selected="true">
+            <i class="fas fa-clipboard-list me-1"></i> Anamnesis
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a href="{% if paciente %}{% url 'historias_clinicas:nuevo_examen_clinico' paciente.id %}{% else %}{% url 'historias_clinicas:lista_pacientes_examen_clinico' %}{% endif %}" class="nav-link">
+            <i class="fas fa-stethoscope me-1"></i> Examen Clínico
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a href="{% if paciente %}{% url 'historias_clinicas:nuevo_odontograma' paciente.id %}{% else %}{% url 'historias_clinicas:lista_pacientes_odontograma' %}{% endif %}" class="nav-link">
+            <i class="fas fa-tooth me-1"></i> Odontograma
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a href="#" class="nav-link disabled">
+            <i class="fas fa-x-ray me-1"></i> Exámenes
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a href="#" class="nav-link disabled">
+            <i class="fas fa-clipboard-check me-1"></i> Tratamientos
+        </a>
+    </li>
+</ul>
+
+<form method="post" class="history-form">
+    {% csrf_token %}
+    
+    <!-- Campo tipo de anamnesis -->
+    <div class="history-section">
+        <div class="section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-info-circle me-2 text-primary"></i>Información de la Anamnesis
+            </h5>
+        </div>
+        <div class="section-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="{{ form.fecha.id_for_label }}" class="form-label required-field">Fecha</label>
+                    {% render_field form.fecha class="form-control" %}
+                </div>
+                <div class="col-md-6">
+                    <label for="{{ form.tipo.id_for_label }}" class="form-label required-field">Tipo de Anamnesis</label>
+                    {% render_field form.tipo class="form-select" %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Antecedentes Médicos -->
+    <div class="history-section">
+        <div class="section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-heartbeat me-2 text-primary"></i>Antecedentes Médicos
+            </h5>
+        </div>
+        <div class="section-body">
+            <div class="row mb-4">
+                <div class="col-md-4 mb-3">
+                    <div class="form-check form-check-lg">
+                        {% render_field form.hipertension class="form-check-input" %}
+                        <label class="form-check-label" for="{{ form.hipertension.id_for_label }}">
+                            Hipertensión arterial
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="form-check form-check-lg">
+                        {% render_field form.diabetes class="form-check-input" %}
+                        <label class="form-check-label" for="{{ form.diabetes.id_for_label }}">
+                            Diabetes
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="form-check form-check-lg">
+                        {% render_field form.cardiopatia class="form-check-input" %}
+                        <label class="form-check-label" for="{{ form.cardiopatia.id_for_label }}">
+                            Cardiopatía
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="form-check form-check-lg">
+                        {% render_field form.hepatitis class="form-check-input" %}
+                        <label class="form-check-label" for="{{ form.hepatitis.id_for_label }}">
+                            Hepatitis
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="form-check form-check-lg">
+                        {% render_field form.alergias class="form-check-input" id="alergias" %}
+                        <label class="form-check-label" for="{{ form.alergias.id_for_label }}">
+                            Alergias
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label for="{{ form.otros_antecedentes.id_for_label }}" class="form-label">Otros antecedentes médicos</label>
+                    {% render_field form.otros_antecedentes class="form-control" rows="3" placeholder="Especifique otros antecedentes médicos relevantes" %}
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="{{ form.medicamentos_actuales.id_for_label }}" class="form-label">Medicamentos actuales</label>
+                    {% render_field form.medicamentos_actuales class="form-control" rows="3" placeholder="Medicamentos que toma actualmente" %}
+                </div>
+                <div class="col-md-6">
+                    <label for="{{ form.alergias_detalle.id_for_label }}" class="form-label">Alergias (especifique)</label>
+                    {% render_field form.alergias_detalle class="form-control" rows="3" placeholder="Detalle las alergias (medicamentos, materiales, etc.)" %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Antecedentes Odontológicos -->
+    <div class="history-section">
+        <div class="section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-tooth me-2 text-primary"></i>Antecedentes Odontológicos
+            </h5>
+        </div>
+        <div class="section-body">
+            <div class="row mb-4">
+                <div class="col-md-4 mb-3">
+                    <div class="form-check form-check-lg">
+                        {% render_field form.tratamiento_dental_previo class="form-check-input" %}
+                        <label class="form-check-label" for="{{ form.tratamiento_dental_previo.id_for_label }}">
+                            Tratamiento dental previo
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="form-check form-check-lg">
+                        {% render_field form.protesis class="form-check-input" %}
+                        <label class="form-check-label" for="{{ form.protesis.id_for_label }}">
+                            Prótesis dental
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="form-check form-check-lg">
+                        {% render_field form.cirugia_oral class="form-check-input" %}
+                        <label class="form-check-label" for="{{ form.cirugia_oral.id_for_label }}">
+                            Cirugía oral/maxilofacial
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="form-check form-check-lg">
+                        {% render_field form.dolor_mandibular class="form-check-input" %}
+                        <label class="form-check-label" for="{{ form.dolor_mandibular.id_for_label }}">
+                            Dolor mandibular
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="form-check form-check-lg">
+                        {% render_field form.sangrado_encias class="form-check-input" %}
+                        <label class="form-check-label" for="{{ form.sangrado_encias.id_for_label }}">
+                            Sangrado de encías
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="{{ form.ultima_visita_odontologica.id_for_label }}" class="form-label">Última visita al odontólogo</label>
+                    {% render_field form.ultima_visita_odontologica class="form-control" placeholder="Ej: hace 6 meses" %}
+                </div>
+                <div class="col-md-6">
+                    <label for="{{ form.motivo_ultima_visita.id_for_label }}" class="form-label">Motivo de la última visita</label>
+                    {% render_field form.motivo_ultima_visita class="form-control" placeholder="Ej: limpieza, extracción" %}
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-12">
+                    <label for="{{ form.habitos_higiene.id_for_label }}" class="form-label">Hábitos de higiene bucal</label>
+                    {% render_field form.habitos_higiene class="form-control" rows="3" placeholder="Frecuencia de cepillado, uso de hilo dental, enjuague, etc." %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Anamnesis Actual -->
+    <div class="history-section">
+        <div class="section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-clipboard-check me-2 text-primary"></i>Motivo de Consulta
+            </h5>
+        </div>
+        <div class="section-body">
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <label for="{{ form.motivo_consulta.id_for_label }}" class="form-label required-field">Motivo principal de la consulta</label>
+                    {% render_field form.motivo_consulta class="form-control" rows="3" placeholder="Describa el motivo principal de la consulta" required=True %}
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <label class="form-label">Síntomas actuales</label>
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <div class="form-check form-check-lg">
+                                {% render_field form.dolor class="form-check-input" %}
+                                <label class="form-check-label" for="{{ form.dolor.id_for_label }}">
+                                    Dolor
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <div class="form-check form-check-lg">
+                                {% render_field form.sensibilidad class="form-check-input" %}
+                                <label class="form-check-label" for="{{ form.sensibilidad.id_for_label }}">
+                                    Sensibilidad
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <div class="form-check form-check-lg">
+                                {% render_field form.inflamacion class="form-check-input" %}
+                                <label class="form-check-label" for="{{ form.inflamacion.id_for_label }}">
+                                    Inflamación
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <div class="form-check form-check-lg">
+                                {% render_field form.sangrado class="form-check-input" %}
+                                <label class="form-check-label" for="{{ form.sangrado.id_for_label }}">
+                                    Sangrado
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <div class="form-check form-check-lg">
+                                {% render_field form.mal_aliento class="form-check-input" %}
+                                <label class="form-check-label" for="{{ form.mal_aliento.id_for_label }}">
+                                    Mal aliento
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="{{ form.inicio_sintomas.id_for_label }}" class="form-label">Tiempo de inicio de los síntomas</label>
+                    {% render_field form.inicio_sintomas class="form-control" placeholder="Ej: hace 2 semanas" %}
+                </div>
+                <div class="col-md-6">
+                    <label for="{{ form.intensidad_dolor.id_for_label }}" class="form-label">Intensidad del dolor (1-10)</label>
+                    {% render_field form.intensidad_dolor class="form-control" min="1" max="10" placeholder="Escala de 1 a 10" %}
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-12">
+                    <label for="{{ form.descripcion_sintomas.id_for_label }}" class="form-label">Descripción detallada de síntomas</label>
+                    {% render_field form.descripcion_sintomas class="form-control" rows="3" placeholder="Describa detalladamente los síntomas (localización, duración, factores desencadenantes, etc.)" %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hábitos y Factores de Riesgo -->
+    <div class="history-section">
+        <div class="section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-exclamation-triangle me-2 text-primary"></i>Hábitos y Factores de Riesgo
+            </h5>
+        </div>
+        <div class="section-body">
+            <div class="row mb-4">
+                <div class="col-md-4 mb-3">
+                    <div class="form-check form-check-lg">
+                        {% render_field form.fuma class="form-check-input" %}
+                        <label class="form-check-label" for="{{ form.fuma.id_for_label }}">
+                            Tabaquismo
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="form-check form-check-lg">
+                        {% render_field form.alcohol class="form-check-input" %}
+                        <label class="form-check-label" for="{{ form.alcohol.id_for_label }}">
+                            Consumo de alcohol
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="form-check form-check-lg">
+                        {% render_field form.bruxismo class="form-check-input" %}
+                        <label class="form-check-label" for="{{ form.bruxismo.id_for_label }}">
+                            Bruxismo
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="form-check form-check-lg">
+                        {% render_field form.onicofagia class="form-check-input" %}
+                        <label class="form-check-label" for="{{ form.onicofagia.id_for_label }}">
+                            Onicofagia (morderse las uñas)
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="form-check form-check-lg">
+                        {% render_field form.respirador_bucal class="form-check-input" %}
+                        <label class="form-check-label" for="{{ form.respirador_bucal.id_for_label }}">
+                            Respirador bucal
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-12">
+                    <label for="{{ form.otros_habitos.id_for_label }}" class="form-label">Otros hábitos o factores relevantes</label>
+                    {% render_field form.otros_habitos class="form-control" rows="3" placeholder="Describa otros hábitos que puedan ser relevantes para el tratamiento" %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Observaciones -->
+    <div class="history-section">
+        <div class="section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-comment-medical me-2 text-primary"></i>Observaciones y Notas Adicionales
+            </h5>
+        </div>
+        <div class="section-body">
+            <div class="row">
+                <div class="col-md-12">
+                    {% render_field form.observaciones class="form-control" rows="4" placeholder="Registre cualquier observación adicional relevante para el caso" %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Firma y Fecha -->
+    <div class="history-section">
+        <div class="section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-file-signature me-2 text-primary"></i>Firma y Confirmación
+            </h5>
+        </div>
+        <div class="section-body">
+            <div class="row align-items-center mb-4">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <div class="form-check form-check-lg">
+                        {% render_field form.consentimiento class="form-check-input" %}
+                        <label class="form-check-label" for="{{ form.consentimiento.id_for_label }}">
+                            Paciente ha dado su consentimiento para el tratamiento y uso de datos
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0">
+                        <span class="text-muted">Doctor:</span>
+                        <span class="fw-medium">{{ request.user.get_full_name }}</span>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="{{ form.firma_paciente.id_for_label }}" class="form-label required-field">Firma del Paciente</label>
+                    {% render_field form.firma_paciente class="form-control" placeholder="Firma electrónica o física del paciente" %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Botones de Acción -->
+    <div class="row">
+        <div class="col-12 text-end">
+            <a href="{% url 'historias_clinicas:historial_anamnesis' paciente.id %}" class="btn btn-light btn-lg px-4 rounded-pill me-2">
+                Cancelar
+            </a>
+            <button type="submit" name="guardar_borrador" class="btn btn-secondary btn-lg px-4 rounded-pill me-2">
+                <i class="fas fa-save me-2"></i>Guardar borrador
+            </button>
+            <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill">
+                <i class="fas fa-check-circle me-2"></i>Guardar y continuar
+            </button>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Establecer la fecha actual
+        const today = new Date();
+        const formattedDate = today.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        document.getElementById('current-date').textContent = formattedDate;
+        
+        // Toggle para mostrar campos adicionales basados en checkboxes
+        const allergiesCheckbox = document.getElementById('alergias');
+        const allergiesDetailField = document.getElementById('id_alergias_detalle').parentElement;
+        
+        if (allergiesCheckbox && allergiesDetailField) {
+            allergiesCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    allergiesDetailField.style.display = 'block';
+                    allergiesDetailField.querySelector('textarea').focus();
+                } else {
+                    allergiesDetailField.style.display = 'none';
+                }
+            });
+            
+            // Estado inicial
+            if (!allergiesCheckbox.checked) {
+                allergiesDetailField.style.display = 'none';
+            }
+        }
+    });
+</script>
+{% endblock %}

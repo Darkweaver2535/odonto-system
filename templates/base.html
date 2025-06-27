@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -538,17 +539,17 @@
                         </a>
                         <ul class="submenu">
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
+                                <a href="{% url 'historias_clinicas:lista_pacientes_anamnesis' %}" class="nav-link">
                                     <i class="fas fa-file-medical"></i> Anamnesis
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
+                                <a href="{% url 'historias_clinicas:lista_pacientes_examen_clinico' %}" class="nav-link">
                                     <i class="fas fa-stethoscope"></i> Examen Clínico
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
+                                <a href="{% url 'historias_clinicas:lista_pacientes_odontograma' %}" class="nav-link">
                                     <i class="fas fa-teeth"></i> Odontograma
                                 </a>
                             </li>
@@ -949,6 +950,7 @@
             window.addEventListener('resize', checkWindowSize);
         });
     </script>
+    <script src="{% static 'js/odontograma.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

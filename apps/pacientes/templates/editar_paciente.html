@@ -387,6 +387,15 @@
                     </div>
                     {% endif %}
                 </div>
+                <div class="col-md-4">
+                    <label for="{{ form.ocupacion.id_for_label }}" class="form-label">Ocupación</label>
+                    {% render_field form.ocupacion class="form-control" placeholder="Ej. Ingeniero, Profesor, Estudiante..." %}
+                    {% if form.ocupacion.errors %}
+                    <div class="text-danger">
+                        {{ form.ocupacion.errors }}
+                    </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -557,6 +566,48 @@
         </div>
     </div>
     
+    <!-- Sección de Información Adicional -->
+    <div class="form-section">
+        <div class="form-section-header">
+            <h5 class="mb-0">
+                <i class="fas fa-info-circle me-2 text-primary"></i>Información Adicional
+            </h5>
+        </div>
+        <div class="form-section-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="form-check form-check-lg">
+                        {% render_field form.vacuna_covid class="form-check-input" id="vacuna_covid" %}
+                        <label class="form-check-label" for="vacuna_covid">
+                            Paciente vacunado contra COVID-19
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <!-- Espacio para mantener el equilibrio -->
+                </div>
+                <div class="col-md-6">
+                    <label for="{{ form.como_localizo.id_for_label }}" class="form-label">¿Cómo nos localizó?</label>
+                    {% render_field form.como_localizo class="form-select" %}
+                    {% if form.como_localizo.errors %}
+                    <div class="text-danger">
+                        {{ form.como_localizo.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6" id="como_localizo_detalle_container">
+                    <label for="{{ form.como_localizo_detalle.id_for_label }}" class="form-label">Detalles</label>
+                    {% render_field form.como_localizo_detalle class="form-control" placeholder="Proporcione detalles adicionales..." %}
+                    {% if form.como_localizo_detalle.errors %}
+                    <div class="text-danger">
+                        {{ form.como_localizo_detalle.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Sección de Seguro Médico -->
     <div class="form-section">
         <div class="form-section-header">
@@ -568,8 +619,8 @@
             <div class="row g-3">
                 <div class="col-md-12">
                     <div class="form-check form-check-lg">
-                        {% render_field form.tiene_seguro class="form-check-input" %}
-                        <label class="form-check-label" for="{{ form.tiene_seguro.id_for_label }}">
+                        {% render_field form.tiene_seguro class="form-check-input" id="tiene_seguro" %}
+                        <label class="form-check-label" for="tiene_seguro">
                             Paciente cuenta con seguro médico
                         </label>
                     </div>
@@ -838,5 +889,30 @@
             tieneSeguro.addEventListener('change', toggleSeguroFields);
         }
     });
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mostrar u ocultar campo de detalles según selección
+    const comoLocalizoSelect = document.getElementById('{{ form.como_localizo.id_for_label }}');
+    const detalleContainer = document.getElementById('como_localizo_detalle_container');
+    
+    if (comoLocalizoSelect && detalleContainer) {
+        function toggleDetalleVisibility() {
+            // Mostrar detalles para 'referencia' (Me envió alguien) y 'otro'
+            if (comoLocalizoSelect.value === 'referencia' || comoLocalizoSelect.value === 'otro') {
+                detalleContainer.style.display = 'block';
+            } else {
+                detalleContainer.style.display = 'none';
+            }
+        }
+        
+        // Estado inicial
+        toggleDetalleVisibility();
+        
+        // Listener para cambios
+        comoLocalizoSelect.addEventListener('change', toggleDetalleVisibility);
+    }
+});
 </script>
 {% endblock %}

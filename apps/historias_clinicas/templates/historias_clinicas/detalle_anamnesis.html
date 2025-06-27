@@ -1,0 +1,615 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Detalle de Anamnesis | {{ paciente.get_nombre_completo }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .history-header {
+        background-color: white;
+        border-radius: 18px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .history-section {
+        background: white;
+        border-radius: 18px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+    
+    .section-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e9ecef;
+        background-color: rgba(26, 145, 209, 0.05);
+    }
+    
+    .section-body {
+        padding: 1.5rem;
+    }
+    
+    .patient-info {
+        display: flex;
+        align-items: center;
+    }
+    
+    .patient-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-right: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: white;
+        background-color: var(--primary);
+    }
+    
+    .patient-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .patient-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 0.25rem;
+        line-height: 1.2;
+    }
+    
+    .patient-details {
+        color: var(--gray-500);
+        font-size: 0.95rem;
+    }
+    
+    .badge-status {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .badge-active {
+        background-color: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+    }
+    
+    .history-card {
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        border: none;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Estilos para la vista de detalle */
+    .detail-navigation {
+        margin-bottom: 1.5rem;
+    }
+    
+    .detail-metadata {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .detail-doctor {
+        margin-right: 1.5rem;
+    }
+    
+    .detail-date {
+        color: var(--gray-600);
+    }
+    
+    .detail-table {
+        width: 100%;
+        margin-bottom: 1.5rem;
+    }
+    
+    .detail-table th {
+        width: 30%;
+        background-color: rgba(26, 145, 209, 0.05);
+        padding: 0.75rem;
+    }
+    
+    .detail-table td {
+        padding: 0.75rem;
+    }
+    
+    .symptom-badge {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        background-color: rgba(26, 145, 209, 0.1);
+        color: var(--primary);
+    }
+    
+    .yes-indicator {
+        color: #28a745;
+    }
+    
+    .no-indicator {
+        color: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="mb-2">Detalle de Anamnesis</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'historias_clinicas:lista_pacientes_anamnesis' %}">Anamnesis</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'historias_clinicas:historial_anamnesis' paciente.id %}">{{ paciente.get_nombre_completo }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Detalle</li>
+            </ol>
+        </nav>
+    </div>
+    
+    <div class="d-flex">
+        <a href="{% url 'historias_clinicas:historial_anamnesis' paciente.id %}" class="btn btn-outline-primary rounded-pill me-2">
+            <i class="fas fa-arrow-left me-2"></i>Regresar
+        </a>
+        <a href="{% url 'historias_clinicas:editar_anamnesis' paciente.id anamnesis.id %}" class="btn btn-primary rounded-pill">
+            <i class="fas fa-edit me-2"></i>Editar
+        </a>
+    </div>
+</div>
+
+<!-- Navegación entre registros -->
+<div class="detail-navigation row">
+    <div class="col-md-6">
+        {% if anterior %}
+            <a href="{% url 'historias_clinicas:detalle_anamnesis' paciente.id anterior.id %}" class="btn btn-sm btn-light">
+                <i class="fas fa-chevron-left me-1"></i> Registro anterior ({{ anterior.fecha|date:"d/m/Y" }})
+            </a>
+        {% endif %}
+    </div>
+    <div class="col-md-6 text-end">
+        {% if siguiente %}
+            <a href="{% url 'historias_clinicas:detalle_anamnesis' paciente.id siguiente.id %}" class="btn btn-sm btn-light">
+                Registro siguiente ({{ siguiente.fecha|date:"d/m/Y" }}) <i class="fas fa-chevron-right ms-1"></i>
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Información del paciente -->
+<div class="history-header">
+    <div class="row">
+        <div class="col-md-7">
+            <div class="patient-info">
+                <div class="patient-avatar">
+                    {% if paciente.foto %}
+                        <img src="{{ paciente.foto.url }}" alt="{{ paciente.get_nombre_completo }}">
+                    {% else %}
+                        {{ paciente.get_iniciales }}
+                    {% endif %}
+                </div>
+                <div>
+                    <h2 class="patient-name">{{ paciente.get_nombre_completo }}</h2>
+                    <div class="patient-details mb-2">
+                        <span class="me-3"><i class="far fa-id-card me-1"></i> CI: {{ paciente.ci }}</span>
+                        <span class="me-3"><i class="fas fa-birthday-cake me-1"></i> {{ paciente.get_edad }} años ({{ paciente.fecha_nacimiento|date:"d/m/Y" }})</span>
+                        <span><i class="fas fa-{% if paciente.genero == 'masculino' %}mars{% elif paciente.genero == 'femenino' %}venus{% else %}genderless{% endif %} me-1"></i> {{ paciente.get_genero_display }}</span>
+                    </div>
+                    <div>
+                        <span class="badge-status 
+                            {% if paciente.estado == 'activo' %}badge-active
+                            {% elif paciente.estado == 'inactivo' %}badge-inactive
+                            {% elif paciente.estado == 'tratamiento' %}badge-treatment
+                            {% elif paciente.estado == 'moroso' %}badge-defaulter{% endif %}">
+                            <i class="fas fa-{% if paciente.estado == 'activo' %}check-circle{% elif paciente.estado == 'inactivo' %}user-slash{% elif paciente.estado == 'tratamiento' %}procedures{% else %}exclamation-circle{% endif %} me-1"></i>
+                            {{ paciente.get_estado_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <div class="detail-metadata text-md-end">
+                <div class="detail-doctor me-4">
+                    <small class="text-muted d-block">Doctor/a</small>
+                    <span class="fw-medium">{{ anamnesis.doctor.get_full_name }}</span>
+                </div>
+                <div class="detail-date">
+                    <small class="text-muted d-block">Fecha</small>
+                    <span class="fw-medium">{{ anamnesis.fecha|date:"d/m/Y H:i" }}</span>
+                </div>
+            </div>
+            <div class="mb-2 text-md-end">
+                <span class="badge bg-primary">{{ anamnesis.get_tipo_display }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Motivo de Consulta -->
+<div class="history-section">
+    <div class="section-header">
+        <h5 class="mb-0">
+            <i class="fas fa-clipboard-check me-2 text-primary"></i>Motivo de Consulta
+        </h5>
+    </div>
+    <div class="section-body">
+        <div class="mb-4">
+            <p class="mb-2">{{ anamnesis.motivo_consulta }}</p>
+        </div>
+        
+        {% if anamnesis.descripcion_sintomas %}
+        <div class="mb-3">
+            <h6 class="text-muted mb-2">Descripción de los síntomas:</h6>
+            <p>{{ anamnesis.descripcion_sintomas }}</p>
+        </div>
+        {% endif %}
+        
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <h6 class="text-muted mb-2">Inicio de síntomas:</h6>
+                <p>{{ anamnesis.inicio_sintomas|default:"No especificado" }}</p>
+            </div>
+            <div class="col-md-4">
+                <h6 class="text-muted mb-2">Intensidad del dolor (1-10):</h6>
+                <p>{{ anamnesis.intensidad_dolor|default:"No especificado" }}</p>
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <h6 class="text-muted mb-2">Síntomas actuales:</h6>
+            <div>
+                {% if anamnesis.dolor %}<span class="symptom-badge"><i class="fas fa-check-circle me-1 yes-indicator"></i> Dolor</span>{% endif %}
+                {% if anamnesis.sensibilidad %}<span class="symptom-badge"><i class="fas fa-check-circle me-1 yes-indicator"></i> Sensibilidad</span>{% endif %}
+                {% if anamnesis.inflamacion %}<span class="symptom-badge"><i class="fas fa-check-circle me-1 yes-indicator"></i> Inflamación</span>{% endif %}
+                {% if anamnesis.sangrado %}<span class="symptom-badge"><i class="fas fa-check-circle me-1 yes-indicator"></i> Sangrado</span>{% endif %}
+                {% if anamnesis.mal_aliento %}<span class="symptom-badge"><i class="fas fa-check-circle me-1 yes-indicator"></i> Mal aliento</span>{% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Antecedentes Médicos -->
+<div class="history-section">
+    <div class="section-header">
+        <h5 class="mb-0">
+            <i class="fas fa-heartbeat me-2 text-primary"></i>Antecedentes Médicos
+        </h5>
+    </div>
+    <div class="section-body">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <td>Hipertensión:</td>
+                            <td>
+                                {% if anamnesis.hipertension %}
+                                <i class="fas fa-check-circle yes-indicator"></i> Sí
+                                {% else %}
+                                <i class="fas fa-times-circle no-indicator"></i> No
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Diabetes:</td>
+                            <td>
+                                {% if anamnesis.diabetes %}
+                                <i class="fas fa-check-circle yes-indicator"></i> Sí
+                                {% else %}
+                                <i class="fas fa-times-circle no-indicator"></i> No
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Cardiopatía:</td>
+                            <td>
+                                {% if anamnesis.cardiopatia %}
+                                <i class="fas fa-check-circle yes-indicator"></i> Sí
+                                {% else %}
+                                <i class="fas fa-times-circle no-indicator"></i> No
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <td>Hepatitis:</td>
+                            <td>
+                                {% if anamnesis.hepatitis %}
+                                <i class="fas fa-check-circle yes-indicator"></i> Sí
+                                {% else %}
+                                <i class="fas fa-times-circle no-indicator"></i> No
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Alergias:</td>
+                            <td>
+                                {% if anamnesis.alergias %}
+                                <i class="fas fa-check-circle yes-indicator"></i> Sí
+                                {% else %}
+                                <i class="fas fa-times-circle no-indicator"></i> No
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        {% if anamnesis.alergias_detalle %}
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <h6 class="text-muted mb-2">Detalle de alergias:</h6>
+                <p>{{ anamnesis.alergias_detalle }}</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if anamnesis.medicamentos_actuales %}
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <h6 class="text-muted mb-2">Medicamentos actuales:</h6>
+                <p>{{ anamnesis.medicamentos_actuales }}</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if anamnesis.otros_antecedentes %}
+        <div class="row">
+            <div class="col-md-12">
+                <h6 class="text-muted mb-2">Otros antecedentes:</h6>
+                <p>{{ anamnesis.otros_antecedentes }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Antecedentes Odontológicos -->
+<div class="history-section">
+    <div class="section-header">
+        <h5 class="mb-0">
+            <i class="fas fa-tooth me-2 text-primary"></i>Antecedentes Odontológicos
+        </h5>
+    </div>
+    <div class="section-body">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <td>Tratamiento dental previo:</td>
+                            <td>
+                                {% if anamnesis.tratamiento_dental_previo %}
+                                <i class="fas fa-check-circle yes-indicator"></i> Sí
+                                {% else %}
+                                <i class="fas fa-times-circle no-indicator"></i> No
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Prótesis:</td>
+                            <td>
+                                {% if anamnesis.protesis %}
+                                <i class="fas fa-check-circle yes-indicator"></i> Sí
+                                {% else %}
+                                <i class="fas fa-times-circle no-indicator"></i> No
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Cirugía oral:</td>
+                            <td>
+                                {% if anamnesis.cirugia_oral %}
+                                <i class="fas fa-check-circle yes-indicator"></i> Sí
+                                {% else %}
+                                <i class="fas fa-times-circle no-indicator"></i> No
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <td>Dolor mandibular:</td>
+                            <td>
+                                {% if anamnesis.dolor_mandibular %}
+                                <i class="fas fa-check-circle yes-indicator"></i> Sí
+                                {% else %}
+                                <i class="fas fa-times-circle no-indicator"></i> No
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Sangrado de encías:</td>
+                            <td>
+                                {% if anamnesis.sangrado_encias %}
+                                <i class="fas fa-check-circle yes-indicator"></i> Sí
+                                {% else %}
+                                <i class="fas fa-times-circle no-indicator"></i> No
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h6 class="text-muted mb-2">Última visita al odontólogo:</h6>
+                <p>{{ anamnesis.ultima_visita_odontologica|default:"No especificado" }}</p>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-muted mb-2">Motivo de la última visita:</h6>
+                <p>{{ anamnesis.motivo_ultima_visita|default:"No especificado" }}</p>
+            </div>
+        </div>
+        
+        {% if anamnesis.habitos_higiene %}
+        <div class="row">
+            <div class="col-md-12">
+                <h6 class="text-muted mb-2">Hábitos de higiene bucal:</h6>
+                <p>{{ anamnesis.habitos_higiene }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Hábitos y Factores de Riesgo -->
+<div class="history-section">
+    <div class="section-header">
+        <h5 class="mb-0">
+            <i class="fas fa-exclamation-triangle me-2 text-primary"></i>Hábitos y Factores de Riesgo
+        </h5>
+    </div>
+    <div class="section-body">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <td>Fuma:</td>
+                            <td>
+                                {% if anamnesis.fuma %}
+                                <i class="fas fa-check-circle yes-indicator"></i> Sí
+                                {% else %}
+                                <i class="fas fa-times-circle no-indicator"></i> No
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Consume alcohol:</td>
+                            <td>
+                                {% if anamnesis.alcohol %}
+                                <i class="fas fa-check-circle yes-indicator"></i> Sí
+                                {% else %}
+                                <i class="fas fa-times-circle no-indicator"></i> No
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Bruxismo:</td>
+                            <td>
+                                {% if anamnesis.bruxismo %}
+                                <i class="fas fa-check-circle yes-indicator"></i> Sí
+                                {% else %}
+                                <i class="fas fa-times-circle no-indicator"></i> No
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <td>Onicofagia (se muerde las uñas):</td>
+                            <td>
+                                {% if anamnesis.onicofagia %}
+                                <i class="fas fa-check-circle yes-indicator"></i> Sí
+                                {% else %}
+                                <i class="fas fa-times-circle no-indicator"></i> No
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Respirador bucal:</td>
+                            <td>
+                                {% if anamnesis.respirador_bucal %}
+                                <i class="fas fa-check-circle yes-indicator"></i> Sí
+                                {% else %}
+                                <i class="fas fa-times-circle no-indicator"></i> No
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        {% if anamnesis.otros_habitos %}
+        <div class="row">
+            <div class="col-md-12">
+                <h6 class="text-muted mb-2">Otros hábitos:</h6>
+                <p>{{ anamnesis.otros_habitos }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Observaciones -->
+{% if anamnesis.observaciones %}
+<div class="history-section">
+    <div class="section-header">
+        <h5 class="mb-0">
+            <i class="fas fa-comment-medical me-2 text-primary"></i>Observaciones
+        </h5>
+    </div>
+    <div class="section-body">
+        <div class="row">
+            <div class="col-md-12">
+                <p>{{ anamnesis.observaciones }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Firma y Consentimiento -->
+<div class="history-section">
+    <div class="section-header">
+        <h5 class="mb-0">
+            <i class="fas fa-file-signature me-2 text-primary"></i>Firma y Consentimiento
+        </h5>
+    </div>
+    <div class="section-body">
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <p>
+                    <i class="{% if anamnesis.consentimiento %}fas fa-check-circle yes-indicator{% else %}fas fa-times-circle no-indicator{% endif %} me-2"></i>
+                    {% if anamnesis.consentimiento %}
+                    El paciente ha otorgado su consentimiento para el tratamiento de datos.
+                    {% else %}
+                    El paciente no ha otorgado su consentimiento para el tratamiento de datos.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        {% if anamnesis.firma_paciente %}
+        <div class="row">
+            <div class="col-md-12">
+                <h6 class="text-muted mb-2">Firma:</h6>
+                <p>{{ anamnesis.firma_paciente }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

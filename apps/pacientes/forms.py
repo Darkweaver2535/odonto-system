@@ -17,6 +17,8 @@ class PacienteForm(forms.ModelForm):
             'enfermedades_cronicas': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Describa las enfermedades crónicas del paciente'}),
             'seguro_cobertura': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Detalle la cobertura del seguro'}),
             'observaciones': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Ingrese información adicional relevante del paciente'}),
+            'ocupacion': forms.TextInput(attrs={'placeholder': 'Ej. Ingeniero, Profesor, Estudiante...'}),
+            'como_localizo_detalle': forms.TextInput(attrs={'placeholder': 'Proporcione detalles si es necesario'}),
         }
         labels = {
             'ci': 'Cédula de Identidad',
@@ -30,6 +32,10 @@ class PacienteForm(forms.ModelForm):
             'seguro_poliza': 'Número de Póliza',
             'seguro_cobertura': 'Cobertura',
             'consentimiento_datos': 'El paciente ha dado su consentimiento para el tratamiento de sus datos personales y médicos',
+            'ocupacion': 'Ocupación',
+            'vacuna_covid': 'Vacuna contra COVID-19',
+            'como_localizo': '¿Cómo nos localizó?',
+            'como_localizo_detalle': 'Detalles',
         }
     
     def __init__(self, *args, **kwargs):
@@ -41,6 +47,9 @@ class PacienteForm(forms.ModelForm):
         self.fields['alergias'].required = False
         self.fields['enfermedades_cronicas'].required = False
         self.fields['observaciones'].required = False
+        self.fields['ocupacion'].required = False
+        self.fields['como_localizo'].required = False
+        self.fields['como_localizo_detalle'].required = False
         
         # Configurar valores predeterminados para estado y fecha_registro
         if not self.instance.pk:  # Solo para nuevas instancias (no en edición)
